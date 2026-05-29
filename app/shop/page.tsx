@@ -1,66 +1,89 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { Search, Heart, Loader2 } from 'lucide-react';
+import { Search, Heart, Loader2, Clock } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, increaseQty, decreaseQty, selectItemQty } from '@/store/cartSlice';
 import { toggleFavourite, selectIsFavourite } from '@/store/favouritesSlice';
 import { RootState } from '@/store';
 import { api, ApiProduct, ApiCategory, imgUrl } from '@/lib/api';
 
+const CAT_ORDER = ['Leafy Greens', 'Vegetables', 'Fruits', 'Flowers'];
+
+const SORT_OPTIONS = [
+  { value: 'popular',    label: 'Sort: Popular' },
+  { value: 'price-asc',  label: 'Price: Low to High' },
+  { value: 'price-desc', label: 'Price: High to Low' },
+  { value: 'name-az',    label: 'Name: A – Z' },
+];
+
 function ProductCard({ product }: { product: ApiProduct }) {
   const dispatch = useDispatch();
   const qty  = useSelector(selectItemQty(product.id));
   const isFav = useSelector((s: RootState) => selectIsFavourite(product.id)(s));
   const src  = imgUrl(product.image_url);
-  const discount = product.previous_price > product.price
-    ? Math.round(((product.previous_price - product.price) / product.previous_price) * 100)
+  const drop = product.previous_price > product.price
+    ? product.previous_price - product.price
     : 0;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-      <Link href={`/shop/${product.id}`} className="block">
-        <div className="relative bg-[#E8F5E9] h-44 flex items-center justify-center">
-          {src
-            ? <img src={src} alt={product.name} className="w-full h-full object-cover" />
-            : <span className="text-7xl">{product.emoji || '🥬'}</span>}
-          <span className="absolute top-3 left-3 bg-[#2E7D32] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">VV</span>
-          {discount > 0 && (
-            <span className="absolute top-3 right-3 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{discount}% off</span>
-          )}
-        </div>
-      </Link>
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-1">
-          <div className="flex-1 min-w-0">
-            <div className="font-bold text-gray-900 text-sm truncate">{product.name}</div>
-            <div className="text-xs text-gray-400">{product.telugu_name || ''}</div>
+    <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #EAEDEB', overflow: 'hidden', transition: 'box-shadow 140ms' }}
+         className="shop-card-hover">
+      {/* Image area */}
+      <div style={{ position: 'relative', background: '#EEF8F0', height: 200 }}>
+        <Link href={`/shop/${product.id}`} style={{ display: 'block', width: '100%', height: '100%' }}>
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            {src
+              ? <img src={src} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <span style={{ fontSize: 72 }}>{product.emoji || '🥬'}</span>}
           </div>
-          <button onClick={() => dispatch(toggleFavourite(product.id))} className="ml-2 p-1 hover:scale-110 transition-transform">
-            <Heart size={15} className={isFav ? 'fill-red-500 text-red-500' : 'text-gray-300'} />
-          </button>
+        </Link>
+
+        {/* Price drop badge */}
+        {drop > 0 && (
+          <span style={{ position: 'absolute', top: 12, left: 12, background: '#C8553D', color: '#fff', fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 999, fontFamily: 'monospace', pointerEvents: 'none' }}>
+            ↓ ₹{drop}
+          </span>
+        )}
+
+        {/* Heart button */}
+        <button
+          onClick={() => dispatch(toggleFavourite(product.id))}
+          style={{ position: 'absolute', top: 12, right: 12, width: 32, height: 32, borderRadius: '50%', background: '#fff', border: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.12)' }}
+        >
+          <Heart size={14} style={isFav ? { fill: '#C8553D', color: '#C8553D' } : { color: '#B7BDB8' }} />
+        </button>
+      </div>
+
+      <div style={{ padding: '14px 16px' }}>
+        <div style={{ fontSize: 11.5, color: '#8E968F', marginBottom: 2, fontFamily: 'var(--font-telugu,sans-serif)' }}>
+          {product.telugu_name || ''}
         </div>
-        <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
-          <span>per {product.unit}</span>
-          <span>·</span>
-          <span>🕐 45 min</span>
-        </div>
-        <div className="flex items-center justify-between">
+        <div style={{ fontWeight: 700, fontSize: 15, color: '#0E1612', marginBottom: 8 }}>{product.name}</div>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           <div>
-            <span className="font-bold text-gray-900">₹{product.price}</span>
-            {product.previous_price > product.price && (
-              <span className="text-xs text-gray-400 line-through ml-1">₹{product.previous_price}</span>
-            )}
+            <div style={{ fontWeight: 700, fontSize: 16, color: '#0E1612' }}>
+              ₹{Math.round(product.price)}
+              <span style={{ fontWeight: 400, fontSize: 12, color: '#8E968F' }}> /{product.unit}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3, color: '#8E968F', fontSize: 11.5 }}>
+              <Clock size={11} />
+              <span>45 min</span>
+            </div>
           </div>
+
           {qty === 0 ? (
             <button
               onClick={() => dispatch(addToCart({ id: product.id, name: product.name, te: product.telugu_name || '', emoji: product.emoji, image_url: product.image_url, price: product.price, unit: product.unit, quantity: 1 }))}
-              className="bg-[#2E7D32] text-white text-sm font-semibold px-4 py-1.5 rounded-full hover:bg-[#1B5E20] transition-colors">Add</button>
+              style={{ background: '#166937', color: '#fff', fontWeight: 600, fontSize: 13.5, padding: '8px 20px', borderRadius: 999, border: 'none', cursor: 'pointer', transition: 'background 140ms', flexShrink: 0 }}>
+              Add to Cart
+            </button>
           ) : (
-            <div className="flex items-center gap-2 border-2 border-[#2E7D32] rounded-full px-2 py-0.5">
-              <button onClick={() => dispatch(decreaseQty(product.id))} className="text-[#2E7D32] font-bold w-5 text-center">−</button>
-              <span className="font-bold text-[#2E7D32] text-sm w-4 text-center">{qty}</span>
-              <button onClick={() => dispatch(increaseQty(product.id))} className="text-[#2E7D32] font-bold w-5 text-center">+</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: '2px solid #166937', borderRadius: 999, padding: '4px 10px', flexShrink: 0 }}>
+              <button onClick={() => dispatch(decreaseQty(product.id))} style={{ color: '#166937', fontWeight: 700, fontSize: 16, background: 'none', border: 'none', cursor: 'pointer', lineHeight: 1, padding: 0 }}>−</button>
+              <span style={{ fontWeight: 700, color: '#166937', fontSize: 13, minWidth: 16, textAlign: 'center' }}>{qty}</span>
+              <button onClick={() => dispatch(increaseQty(product.id))} style={{ color: '#166937', fontWeight: 700, fontSize: 16, background: 'none', border: 'none', cursor: 'pointer', lineHeight: 1, padding: 0 }}>+</button>
             </div>
           )}
         </div>
@@ -75,10 +98,11 @@ export default function ShopPage() {
   const [loading,    setLoading]    = useState(true);
   const [cat,        setCat]        = useState('all');
   const [query,      setQuery]      = useState('');
+  const [sort,       setSort]       = useState('popular');
 
   useEffect(() => {
     Promise.all([
-      api.get<ApiProduct[]>('/api/products?limit=100'),
+      api.get<ApiProduct[]>('/api/products?limit=200'),
       api.get<ApiCategory[]>('/api/categories'),
     ]).then(([prods, cats]) => {
       setProducts(prods);
@@ -87,59 +111,115 @@ export default function ShopPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = products.filter(p => {
-    const matchCat = cat === 'all' || p.category_id === cat;
-    const matchQ   = p.name.toLowerCase().includes(query.toLowerCase())
-                  || (p.telugu_name || '').includes(query);
-    return matchCat && matchQ;
-  });
+  const sortedCategories = useMemo(() => {
+    return [...categories].sort((a, b) => {
+      const ai = CAT_ORDER.indexOf(a.name);
+      const bi = CAT_ORDER.indexOf(b.name);
+      if (ai === -1 && bi === -1) return a.name.localeCompare(b.name);
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+  }, [categories]);
+
+  const filtered = useMemo(() => {
+    let result = products.filter(p => {
+      const matchCat = cat === 'all' || p.category_id === cat;
+      const matchQ   = p.name.toLowerCase().includes(query.toLowerCase())
+                    || (p.telugu_name || '').includes(query);
+      return matchCat && matchQ;
+    });
+
+    if (sort === 'price-asc')  result = [...result].sort((a, b) => a.price - b.price);
+    if (sort === 'price-desc') result = [...result].sort((a, b) => b.price - a.price);
+    if (sort === 'name-az')    result = [...result].sort((a, b) => a.name.localeCompare(b.name));
+
+    return result;
+  }, [products, cat, query, sort]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Shop Fresh Vegetables</h1>
-          <p className="text-gray-500 text-sm mt-1">All products by Vizag Vegetables · Delivered in 45 min</p>
-        </div>
-        <div className="relative w-full sm:w-72">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" placeholder="Search products…" value={query}
-            onChange={e => setQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32]"
-          />
+    <div style={{ background: '#FAFAF7', minHeight: '100vh' }}>
+
+      {/* ── Hero ── */}
+      <div style={{ padding: '64px 0 48px' }}>
+        <div className="vv-container">
+          <div className="eyebrow" style={{ color: '#1F8A4C', marginBottom: 16 }}>Shop</div>
+          <h1 style={{ fontFamily: 'var(--font-poppins,Poppins,sans-serif)', fontWeight: 700, fontSize: 'clamp(36px,5vw,64px)', letterSpacing: '-0.03em', color: '#0E1612', margin: '0 0 20px', lineHeight: 1.05 }}>
+            Fresh from this morning&apos;s{' '}
+            <span className="serif-it" style={{ color: '#166937' }}>harvest.</span>
+          </h1>
+          <p style={{ fontSize: 16, color: '#6B746E', maxWidth: 540, lineHeight: 1.65 }}>
+            {products.length > 0 ? products.length : 92} vegetables, fruits and leafy greens · delivered in 45 minutes across Visakhapatnam.
+          </p>
         </div>
       </div>
 
-      {/* Category tabs */}
-      <div className="flex gap-2 flex-wrap mb-6">
-        <button onClick={() => setCat('all')}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${cat === 'all' ? 'bg-[#2E7D32] text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-[#2E7D32] hover:text-[#2E7D32]'}`}>
-          All
-        </button>
-        {categories.map(c => (
-          <button key={c.id} onClick={() => setCat(c.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${cat === c.id ? 'bg-[#2E7D32] text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-[#2E7D32] hover:text-[#2E7D32]'}`}>
-            {c.name}
-          </button>
-        ))}
-      </div>
+      <div className="vv-container" style={{ paddingBottom: 80 }}>
 
-      {loading ? (
-        <div className="flex items-center justify-center h-48 gap-3 text-gray-400">
-          <Loader2 size={20} className="animate-spin" /> Loading products…
+        {/* ── Controls row ── */}
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 36, paddingBottom: 20, borderBottom: '1px solid #EAEDEB' }}>
+          {/* Search */}
+          <div style={{ position: 'relative', flex: 1, maxWidth: 400, minWidth: 200 }}>
+            <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#8E968F', pointerEvents: 'none' }} />
+            <input
+              type="text"
+              placeholder={`Search vegetables, fruits, పేరు…`}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              style={{ width: '100%', padding: '12px 16px 12px 42px', border: '1px solid #EAEDEB', borderRadius: 999, fontSize: 14.5, background: '#fff', outline: 'none', fontFamily: 'inherit', color: '#0E1612' }}
+            />
+          </div>
+
+          {/* Category pills */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
+            <button onClick={() => setCat('all')} style={{
+              padding: '9px 18px', borderRadius: 999, fontSize: 13.5, fontWeight: 500, cursor: 'pointer',
+              border: cat === 'all' ? 'none' : '1px solid #EAEDEB',
+              background: cat === 'all' ? '#166937' : '#fff',
+              color: cat === 'all' ? '#fff' : '#6B746E',
+              fontFamily: 'inherit', transition: 'all 140ms',
+            }}>All</button>
+            {sortedCategories.map(c => (
+              <button key={c.id} onClick={() => setCat(c.id)} style={{
+                padding: '9px 18px', borderRadius: 999, fontSize: 13.5, fontWeight: 500, cursor: 'pointer',
+                border: cat === c.id ? 'none' : '1px solid #EAEDEB',
+                background: cat === c.id ? '#166937' : '#fff',
+                color: cat === c.id ? '#fff' : '#6B746E',
+                fontFamily: 'inherit', transition: 'all 140ms',
+              }}>{c.name}</button>
+            ))}
+          </div>
+
+          {/* Sort dropdown */}
+          <select
+            value={sort}
+            onChange={e => setSort(e.target.value)}
+            style={{ padding: '10px 14px', border: '1px solid #EAEDEB', borderRadius: 999, fontSize: 13.5, background: '#fff', color: '#0E1612', fontFamily: 'inherit', cursor: 'pointer', outline: 'none', flexShrink: 0 }}>
+            {SORT_OPTIONS.map(o => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
         </div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <div className="text-5xl mb-3">🔍</div>
-          <div className="font-medium text-lg">No products found</div>
-          <button onClick={() => { setCat('all'); setQuery(''); }} className="mt-4 text-[#2E7D32] font-semibold hover:underline">Clear filters</button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {filtered.map(p => <ProductCard key={p.id} product={p} />)}
-        </div>
-      )}
+
+        {/* ── Product grid ── */}
+        {loading ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 192, gap: 12, color: '#8E968F' }}>
+            <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} /> Loading products…
+          </div>
+        ) : filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '64px 0', color: '#8E968F' }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
+            <div style={{ fontWeight: 600, fontSize: 16 }}>No products found</div>
+            <button onClick={() => { setCat('all'); setQuery(''); }} style={{ marginTop: 12, color: '#166937', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 20, position: 'relative' }}>
+            {filtered.map(p => <ProductCard key={p.id} product={p} />)}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

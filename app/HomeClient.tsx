@@ -1,73 +1,97 @@
 'use client';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, increaseQty, decreaseQty, selectItemQty } from '@/store/cartSlice';
 import { toggleFavourite, selectIsFavourite } from '@/store/favouritesSlice';
+import { selectAuth } from '@/store/authSlice';
 import { RootState } from '@/store';
 import { ApiProduct, imgUrl } from '@/lib/api';
-import { Heart } from 'lucide-react';
+import { Heart, Plus } from 'lucide-react';
+import AuthModal from '@/components/AuthModal';
 
 function ProductCard({ product }: { product: ApiProduct }) {
-  const dispatch = useDispatch();
-  const qty  = useSelector(selectItemQty(product.id));
-  const isFav = useSelector((s: RootState) => selectIsFavourite(product.id)(s));
+  const dispatch  = useDispatch();
+  const qty       = useSelector(selectItemQty(product.id));
+  const isFav     = useSelector((s: RootState) => selectIsFavourite(product.id)(s));
+  const auth      = useSelector(selectAuth);
+  const [showAuth, setShowAuth] = useState(false);
+  const src       = imgUrl(product.image_url);
+  const trend     = product.price - (product.previous_price || product.price);
 
-  const src = imgUrl(product.image_url);
-  const discount = product.previous_price > product.price
-    ? Math.round(((product.previous_price - product.price) / product.previous_price) * 100)
-    : 0;
+  const handleFav = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!auth.isLoggedIn) { setShowAuth(true); return; }
+    dispatch(toggleFavourite(product.id));
+  };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all group">
-      <Link href={`/shop/${product.id}`} className="block">
-        <div className="relative bg-[#F1F8E9] h-44 flex items-center justify-center">
-          {src
-            ? <img src={src} alt={product.name} className="w-full h-full object-cover" />
-            : <span className="text-6xl group-hover:scale-110 transition-transform">{product.emoji || '🥬'}</span>}
-          {discount > 0 && (
-            <span className="absolute top-3 left-3 bg-red-500 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full">
-              {discount}% off
-            </span>
-          )}
-          <button onClick={e => { e.preventDefault(); dispatch(toggleFavourite(product.id)); }}
-            className="absolute top-3 right-3 p-1.5 bg-white rounded-full shadow-sm hover:scale-110 transition-transform">
-            <Heart size={14} className={isFav ? 'fill-red-500 text-red-500' : 'text-gray-300'} />
-          </button>
-        </div>
-      </Link>
-      <div className="p-4">
-        <div className="text-[11px] text-gray-400 mb-0.5 font-medium">{product.telugu_name || ''}</div>
-        <div className="font-semibold text-gray-900 text-sm mb-1">{product.name}</div>
-        <div className="text-xs text-gray-400 mb-3">per {product.unit}</div>
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="font-bold text-gray-900">₹{product.price}</span>
-            {product.previous_price > product.price && (
-              <span className="text-xs text-gray-300 line-through ml-1.5">₹{product.previous_price}</span>
-            )}
-          </div>
+    <>
+    <Link href={`/shop/${product.id}`} className="prod-card-fresh" style={{ display: 'block', textDecoration: 'none' }}>
+      <div className="prod-card-media">
+        {/* Discount pill only when price dropped */}
+        {trend < 0 && (
+          <span className="discount-pill">↓ ₹{Math.abs(trend)}</span>
+        )}
+
+        {/* Image or emoji */}
+        {src
+          ? <img src={src} alt={product.name} style={{ width: '84%', height: '84%', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+          : <span style={{ fontSize: '3.6rem', lineHeight: 1 }}>{product.emoji || '🥬'}</span>
+        }
+      </div>
+
+      <div className="prod-card-body-fresh">
+        <div className="telugu">{product.telugu_name || ''}</div>
+        <div className="prod-name-fresh">{product.name}</div>
+        <div className="prod-weight">per {product.unit}</div>
+        <div className="prod-foot">
+          <span className="prod-price">
+            ₹{product.price}
+            <span className="prod-price-unit">/{product.unit}</span>
+          </span>
           {qty === 0 ? (
             <button
-              onClick={() => dispatch(addToCart({ id: product.id, name: product.name, te: product.telugu_name || '', emoji: product.emoji, image_url: product.image_url, price: product.price, unit: product.unit, quantity: 1 }))}
-              className="bg-[#3D8C40] text-white text-sm font-semibold px-4 py-1.5 rounded-full hover:bg-[#357A38] transition-colors">
-              Add
+              className="add-btn-circle"
+              onClick={e => {
+                e.preventDefault();
+                dispatch(addToCart({
+                  id: product.id, name: product.name,
+                  te: product.telugu_name || '', emoji: product.emoji,
+                  image_url: product.image_url, price: product.price,
+                  unit: product.unit, quantity: 1,
+                }));
+              }}
+              aria-label={`Add ${product.name}`}
+            >
+              <Plus size={16} />
             </button>
           ) : (
-            <div className="flex items-center gap-1.5 border-2 border-[#3D8C40] rounded-full px-2 py-0.5">
-              <button onClick={() => dispatch(decreaseQty(product.id))} className="text-[#3D8C40] font-bold w-5 text-center text-base leading-none">−</button>
-              <span className="font-bold text-[#3D8C40] text-sm w-4 text-center">{qty}</span>
-              <button onClick={() => dispatch(increaseQty(product.id))} className="text-[#3D8C40] font-bold w-5 text-center text-base leading-none">+</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, border: '1.5px solid #1F8A4C', borderRadius: 999, padding: '3px 10px' }}>
+              <button
+                onClick={e => { e.preventDefault(); dispatch(decreaseQty(product.id)); }}
+                style={{ color: '#1F8A4C', fontWeight: 700, fontSize: 16, lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px' }}
+              >−</button>
+              <span style={{ fontWeight: 700, color: '#1F8A4C', fontSize: 14, minWidth: 18, textAlign: 'center', fontFamily: 'monospace' }}>{qty}</span>
+              <button
+                onClick={e => { e.preventDefault(); dispatch(increaseQty(product.id)); }}
+                style={{ color: '#1F8A4C', fontWeight: 700, fontSize: 16, lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px' }}
+              >+</button>
             </div>
           )}
         </div>
       </div>
-    </div>
+    </Link>
+    {showAuth && (
+      <AuthModal mode="login" onClose={() => setShowAuth(false)} onSwitch={() => {}} />
+    )}
+    </>
   );
 }
 
 export default function HomeClient({ products }: { products: ApiProduct[] }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 18 }}>
       {products.map(p => <ProductCard key={p.id} product={p} />)}
     </div>
   );

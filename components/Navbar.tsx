@@ -79,7 +79,7 @@ export default function Navbar() {
               </Link>
 
               {/* Notifications */}
-              <Link href="/notifications" className="relative p-2 rounded-full hover:bg-gray-100 transition-colors hidden sm:flex">
+              <Link href="/profile?tab=notifications" className="relative p-2 rounded-full hover:bg-gray-100 transition-colors hidden sm:flex">
                 <Bell size={20} className="text-gray-600" />
               </Link>
 
@@ -97,10 +97,10 @@ export default function Navbar() {
                   {userDropdown && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
                       {[
-                        { href: '/profile',        label: '👤 My Profile'      },
-                        { href: '/orders',          label: '📦 My Orders'       },
-                        { href: '/order-tracking',  label: '🛵 Track Order'     },
-                        { href: '/notifications',   label: '🔔 Notifications'   },
+                        { href: '/profile',                    label: '👤 My Profile'    },
+                        { href: '/profile?tab=orders',         label: '📦 My Orders'     },
+                        { href: '/order-tracking',             label: '🛵 Track Order'   },
+                        { href: '/profile?tab=notifications',  label: '🔔 Notifications' },
                       ].map(item => (
                         <Link key={item.href} href={item.href} onClick={() => setUserDropdown(false)}
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">{item.label}</Link>

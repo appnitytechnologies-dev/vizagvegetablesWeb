@@ -52,13 +52,14 @@ export default function CheckoutPage() {
   const delivery = total >= 500 ? 0 : DELIVERY;
 
   /* Step state */
-  const [step,    setStep]    = useState(0);
-  const [method,  setMethod]  = useState('upi');
-  const [upiId,   setUpiId]   = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState('');
-  const [showAuth, setShowAuth] = useState(false);
-  const [slot,    setSlot]    = useState(SLOTS[0]);
+  const [step,         setStep]         = useState(0);
+  const [method,       setMethod]       = useState('upi');
+  const [upiId,        setUpiId]        = useState('');
+  const [loading,      setLoading]      = useState(false);
+  const [error,        setError]        = useState('');
+  const [showAuth,     setShowAuth]     = useState(false);
+  const [slot,         setSlot]         = useState(SLOTS[0]);
+  const [orderPlaced,  setOrderPlaced]  = useState(false);
 
   /* Address state */
   const [addresses,    setAddresses]    = useState<UserAddress[]>([]);
@@ -70,8 +71,8 @@ export default function CheckoutPage() {
   const [showNewForm,  setShowNewForm]  = useState(false);
 
   useEffect(() => {
-    if (items.length === 0) router.replace('/shop');
-  }, [items.length, router]);
+    if (items.length === 0 && !orderPlaced) router.replace('/shop');
+  }, [items.length, router, orderPlaced]);
 
   /* Load saved addresses when logged in */
   useEffect(() => {
@@ -167,6 +168,7 @@ export default function CheckoutPage() {
         delivery_slot:    slot,
         payment_method:   method,
       });
+      setOrderPlaced(true);
       dispatch(clearCart());
       router.push(`/order-success?id=${res.id}`);
     } catch (e: any) {

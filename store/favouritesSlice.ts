@@ -13,10 +13,16 @@ const favouritesSlice = createSlice({
       if (idx >= 0) state.ids.splice(idx, 1);
       else state.ids.push(action.payload);
     },
+    setFavourites(state, action: PayloadAction<string[]>) {
+      state.ids = action.payload;
+    },
+    clearFavourites(state) {
+      state.ids = [];
+    },
   },
 });
 
-export const { toggleFavourite } = favouritesSlice.actions;
+export const { toggleFavourite, setFavourites, clearFavourites } = favouritesSlice.actions;
 export const selectFavouriteIds = (s: { favourites: FavState }) => s.favourites.ids;
 export const selectIsFavourite  = (id: string) => (s: { favourites: FavState }) => s.favourites.ids.includes(id);
 export default favouritesSlice.reducer;

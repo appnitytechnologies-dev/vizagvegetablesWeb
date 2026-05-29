@@ -1,243 +1,296 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Search, Loader2, LayoutList, LayoutGrid, Heart } from 'lucide-react';
-import { useSelector } from 'react-redux';
+import { Search, Loader2, LayoutList, LayoutGrid, Heart, Share2 } from 'lucide-react';
+import { useSelector, useDispatch } from 'react-redux';
 import { selectAuth } from '@/store/authSlice';
+import { selectIsFavourite, selectFavouriteIds, toggleFavourite } from '@/store/favouritesSlice';
 import { api, ApiProduct, imgUrl } from '@/lib/api';
 import AuthModal from '@/components/AuthModal';
+import { RootState } from '@/store';
 
+const CATS = [
+  { id: 'All',        label: 'All' },
+  { id: 'Leafy Greens', label: 'Leafy Greens' },
+  { id: 'Vegetables', label: 'Vegetables' },
+  { id: 'Fruits',     label: 'Fruits' },
+  { id: 'Flowers',    label: 'Flowers' },
+];
+
+function PriceRow({ p, showAuth }: { p: ApiProduct; showAuth: () => void }) {
+  const dispatch = useDispatch();
+  const auth     = useSelector(selectAuth);
+  const isFav    = useSelector((s: RootState) => selectIsFavourite(p.id)(s));
+  const src      = imgUrl(p.image_url);
+  const chg      = p.price - (p.previous_price || p.price);
+
+  const handleFav = () => {
+    if (!auth.isLoggedIn) { showAuth(); return; }
+    dispatch(toggleFavourite(p.id));
+    api.post(`/api/favorites/${p.id}`, {}).catch(() => {});
+  };
+
+  const handleShare = () => {
+    const text = `${p.name}${p.telugu_name ? ` (${p.telugu_name})` : ''} at Vizag Vegetables — today's Rythu Bazar rate: ₹${p.price}/${p.unit}`;
+    if (navigator.share) navigator.share({ title: p.name, text }).catch(() => {});
+    else navigator.clipboard?.writeText(text);
+  };
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 100px 150px', gap: 16, padding: '14px 24px', borderBottom: '1px solid #EAEDEB', alignItems: 'center' }}
+         className="price-row-hover">
+      {/* Item */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 10, background: '#EEF8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+          {src
+            ? <img src={src} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : <span style={{ fontSize: 22 }}>{p.emoji || '🥬'}</span>}
+        </div>
+        <div>
+          <div style={{ fontWeight: 600, fontSize: 15, color: '#0E1612' }}>{p.name}</div>
+          <div style={{ fontSize: 12.5, color: '#8E968F', fontFamily: 'var(--font-telugu,sans-serif)' }}>
+            {p.telugu_name || ''}{p.telugu_name ? ' · ' : ''}per {p.unit}
+          </div>
+        </div>
+      </div>
+
+      {/* Today */}
+      <div style={{ fontFamily: 'monospace', fontSize: 17, fontWeight: 700, color: '#0E1612', textAlign: 'right' }}>
+        ₹{Number(p.price).toFixed(2)}
+      </div>
+
+      {/* Yesterday */}
+      <div style={{ fontFamily: 'monospace', fontSize: 15, color: '#8E968F', textAlign: 'right' }}>
+        ₹{Number(p.previous_price || p.price).toFixed(2)}
+      </div>
+
+      {/* Change + actions */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12 }}>
+        {chg === 0
+          ? <span style={{ color: '#B7BDB8', fontSize: 14 }}>—</span>
+          : <span style={{ fontFamily: 'monospace', fontSize: 14, fontWeight: 600, color: chg > 0 ? '#C8553D' : '#166937' }}>
+              {chg > 0 ? '↑' : '↓'} ₹{Math.abs(chg)}
+            </span>
+        }
+        <div style={{ display: 'flex', gap: 2 }}>
+          <button onClick={handleFav} style={{
+            width: 32, height: 32, borderRadius: '50%', background: 'transparent',
+            display: 'grid', placeItems: 'center', cursor: 'pointer', border: 'none',
+            color: isFav ? '#C8553D' : '#B7BDB8', transition: 'all 140ms',
+          }}>
+            <Heart size={15} style={isFav ? { fill: '#C8553D' } : {}} />
+          </button>
+          <button onClick={handleShare} style={{
+            width: 32, height: 32, borderRadius: '50%', background: 'transparent',
+            display: 'grid', placeItems: 'center', cursor: 'pointer', border: 'none',
+            color: '#B7BDB8', transition: 'all 140ms',
+          }}>
+            <Share2 size={14} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PriceGridCard({ p, showAuth }: { p: ApiProduct; showAuth: () => void }) {
+  const dispatch = useDispatch();
+  const auth     = useSelector(selectAuth);
+  const isFav    = useSelector((s: RootState) => selectIsFavourite(p.id)(s));
+  const src      = imgUrl(p.image_url);
+  const chg      = p.price - (p.previous_price || p.price);
+
+  const handleFav = () => {
+    if (!auth.isLoggedIn) { showAuth(); return; }
+    dispatch(toggleFavourite(p.id));
+    api.post(`/api/favorites/${p.id}`, {}).catch(() => {});
+  };
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: '#fff', border: '1px solid #EAEDEB', borderRadius: 14, transition: 'all 140ms' }}>
+      <div style={{ width: 56, height: 56, borderRadius: 12, background: '#EEF8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+        {src
+          ? <img src={src} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          : <span style={{ fontSize: 28 }}>{p.emoji || '🥬'}</span>}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 12, color: '#8E968F', fontFamily: 'var(--font-telugu,sans-serif)' }}>{p.telugu_name || ''}</div>
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#0E1612' }}>{p.name}</div>
+        <div style={{ fontFamily: 'monospace', fontSize: 15, fontWeight: 600, color: '#0E1612', marginTop: 2 }}>
+          ₹{Math.round(p.price)}<span style={{ opacity: 0.55, fontSize: 11, fontWeight: 400 }}>/{p.unit}</span>
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+        {chg !== 0 && (
+          <span style={{ fontFamily: 'monospace', fontSize: 11.5, fontWeight: 600, padding: '3px 8px', borderRadius: 999, background: chg < 0 ? '#EEF8F0' : '#FBEDE8', color: chg < 0 ? '#166937' : '#C8553D' }}>
+            {chg > 0 ? '↑' : '↓'} ₹{Math.abs(chg)}
+          </span>
+        )}
+        <button onClick={handleFav} style={{ width: 28, height: 28, borderRadius: '50%', background: 'transparent', display: 'grid', placeItems: 'center', cursor: 'pointer', border: 'none', color: isFav ? '#C8553D' : '#B7BDB8' }}>
+          <Heart size={14} style={isFav ? { fill: '#C8553D' } : {}} />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function PricesPage() {
-  const auth = useSelector(selectAuth);
-
+  const favIds = useSelector(selectFavouriteIds);
   const [products,  setProducts]  = useState<ApiProduct[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [query,     setQuery]     = useState('');
   const [cat,       setCat]       = useState('All');
   const [view,      setView]      = useState<'list' | 'grid'>('list');
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showAuth,  setShowAuth]  = useState(false);
 
   useEffect(() => {
-    api.get<ApiProduct[]>('/api/products?limit=200')
+    api.get<ApiProduct[]>('/api/market-rates?limit=500')
       .then(setProducts)
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  /* Load favorites from DB when logged in */
-  useEffect(() => {
-    if (!auth.isLoggedIn) { setFavorites(new Set()); return; }
-    api.get<string[]>('/api/favorites')
-      .then(ids => setFavorites(new Set(ids)))
-      .catch(() => {});
-  }, [auth.isLoggedIn]);
+  const filtered = products.filter(p => {
+    const matchCat = cat === 'All' || (cat === 'Favourites' ? favIds.includes(p.id) : p.category_name === cat);
+    const matchQ   = !query || p.name.toLowerCase().includes(query.toLowerCase()) || (p.telugu_name || '').includes(query);
+    return matchCat && matchQ;
+  });
 
-  const toggleFav = (id: string) => {
-    if (!auth.isLoggedIn) { setShowAuth(true); return; }
-    /* Optimistic update */
-    setFavorites(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-    /* Persist to DB */
-    api.post<{ favorited: boolean }>(`/api/favorites/${id}`, {}).catch(() => {
-      /* Revert on failure */
-      setFavorites(prev => {
-        const next = new Set(prev);
-        next.has(id) ? next.delete(id) : next.add(id);
-        return next;
-      });
-    });
-  };
+  const upCount   = products.filter(p => p.price > (p.previous_price || p.price)).length;
+  const downCount = products.filter(p => p.price < (p.previous_price || p.price)).length;
+  const sameCount = products.length - upCount - downCount;
 
-  const hasFavs = favorites.size > 0;
-
-  /* Category pills — Favorites first, then All, then product categories */
-  const productCats = Array.from(new Set(products.map(p => p.category_name).filter(Boolean)));
-  const cats = [
-    ...(hasFavs ? ['Favorites'] : []),
-    'All',
-    ...productCats,
-  ];
-
-  /* Filter + sort: favorites float to top when viewing All */
-  const filtered = products
-    .filter(p => {
-      if (cat === 'Favorites') return favorites.has(p.id);
-      const matchCat = cat === 'All' || p.category_name === cat;
-      const matchQ   = p.name.toLowerCase().includes(query.toLowerCase())
-                    || (p.telugu_name || '').includes(query);
-      return matchCat && matchQ;
-    })
-    .sort((a, b) => {
-      /* When on All/category views, favorites float to the top */
-      if (cat !== 'Favorites') {
-        const af = favorites.has(a.id) ? 0 : 1;
-        const bf = favorites.has(b.id) ? 0 : 1;
-        if (af !== bf) return af - bf;
-      }
-      return 0;
-    });
-
-  /* Search also works inside Favorites */
-  const display = cat === 'Favorites'
-    ? filtered.filter(p =>
-        p.name.toLowerCase().includes(query.toLowerCase()) ||
-        (p.telugu_name || '').includes(query))
-    : filtered;
+  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-1">Today&apos;s Rythu Bazar Rates</h1>
-        <p className="text-gray-500 text-sm">
-          Prices updated this morning ·&nbsp;
-          {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+    <div style={{ background: '#FAFAF7', minHeight: '100vh' }}>
+      {showAuth && <AuthModal mode="login" onClose={() => setShowAuth(false)} onSwitch={() => {}} />}
+
+      {/* ── Page Hero ── */}
+      <div style={{ padding: '64px 0 48px' }}>
+        <div className="vv-container">
+          <div className="eyebrow" style={{ color: '#1F8A4C', marginBottom: 16 }}>Live · {today}</div>
+          <h1 style={{ fontFamily: 'var(--font-poppins,Poppins,sans-serif)', fontWeight: 700, fontSize: 'clamp(36px,5vw,72px)', letterSpacing: '-0.035em', color: '#0E1612', margin: '0 0 20px', lineHeight: 1.05 }}>
+            Today&apos;s <span className="serif-it" style={{ color: '#166937' }}>Rythu Bazar</span> rates.
+          </h1>
+          <p style={{ fontSize: 16, color: '#6B746E', maxWidth: 560, lineHeight: 1.65 }}>
+            Updated this morning at 6:14 AM from all 4 Rythu Bazar locations across Visakhapatnam. Prices are indicative.
+          </p>
+        </div>
+      </div>
+
+      <div className="vv-container" style={{ paddingBottom: 80 }}>
+
+        {/* ── Stats cards ── */}
+        {!loading && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 40 }}>
+            {[
+              { label: 'Items tracked', value: products.length, color: '#0E1612', prefix: '' },
+              { label: 'Up today',      value: upCount,         color: '#C8553D', prefix: '↑ ' },
+              { label: 'Down today',    value: downCount,       color: '#166937', prefix: '↓ ' },
+              { label: 'Unchanged',     value: sameCount,       color: '#0E1612', prefix: '— ' },
+            ].map(s => (
+              <div key={s.label} style={{ padding: '20px 24px', background: '#fff', border: '1px solid #EAEDEB', borderRadius: 14 }}>
+                <div style={{ fontSize: 12.5, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#8E968F' }}>{s.label}</div>
+                <div style={{ fontFamily: 'var(--font-poppins,Poppins,sans-serif)', fontWeight: 700, fontSize: 'clamp(32px,3vw,48px)', letterSpacing: '-0.025em', color: s.color, marginTop: 6, lineHeight: 1 }}>
+                  {s.prefix}{s.value}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Controls ── */}
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 28, paddingBottom: 20, borderBottom: '1px solid #EAEDEB' }}>
+          <div style={{ position: 'relative', flex: 1, maxWidth: 480, minWidth: 220 }}>
+            <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#8E968F', pointerEvents: 'none' }} />
+            <input
+              type="text"
+              placeholder={`Search ${products.length} items…`}
+              value={query} onChange={e => setQuery(e.target.value)}
+              style={{ width: '100%', padding: '12px 16px 12px 42px', border: '1px solid #EAEDEB', borderRadius: 999, fontSize: 14.5, background: '#fff', outline: 'none', fontFamily: 'inherit', color: '#0E1612' }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {/* All button */}
+            <button onClick={() => setCat('All')} style={{
+              padding: '9px 18px', borderRadius: 999, fontSize: 13.5, fontWeight: 500, cursor: 'pointer',
+              border: cat === 'All' ? 'none' : '1px solid #EAEDEB',
+              background: cat === 'All' ? '#166937' : '#fff',
+              color: cat === 'All' ? '#fff' : '#6B746E',
+              fontFamily: 'inherit', transition: 'all 140ms',
+            }}>All</button>
+
+            {/* Favourites — right after All */}
+            {favIds.length > 0 && (
+              <button onClick={() => setCat(cat === 'Favourites' ? 'All' : 'Favourites')} style={{
+                padding: '9px 18px', borderRadius: 999, fontSize: 13.5, fontWeight: 500, cursor: 'pointer',
+                border: cat === 'Favourites' ? 'none' : '1px solid #EAEDEB',
+                background: cat === 'Favourites' ? '#C8553D' : '#fff',
+                color: cat === 'Favourites' ? '#fff' : '#C8553D',
+                fontFamily: 'inherit', transition: 'all 140ms',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <Heart size={13} style={cat === 'Favourites' ? { fill: '#fff' } : { fill: '#C8553D' }} />
+                Favourites ({favIds.length})
+              </button>
+            )}
+
+            {/* Remaining categories (skip All since it's rendered above) */}
+            {CATS.filter(c => c.id !== 'All').map(c => (
+              <button key={c.id} onClick={() => setCat(c.id)} style={{
+                padding: '9px 18px', borderRadius: 999, fontSize: 13.5, fontWeight: 500, cursor: 'pointer',
+                border: cat === c.id ? 'none' : '1px solid #EAEDEB',
+                background: cat === c.id ? '#166937' : '#fff',
+                color: cat === c.id ? '#fff' : '#6B746E',
+                fontFamily: 'inherit', transition: 'all 140ms',
+              }}>{c.label}</button>
+            ))}
+          </div>
+          {/* View toggle */}
+          <div style={{ display: 'flex', background: '#fff', border: '1px solid #EAEDEB', borderRadius: 999, padding: 3, marginLeft: 'auto' }}>
+            {([['list', LayoutList], ['grid', LayoutGrid]] as const).map(([v, Icon]) => (
+              <button key={v} onClick={() => setView(v)} style={{
+                width: 36, height: 32, display: 'grid', placeItems: 'center', borderRadius: 999,
+                background: view === v ? '#166937' : 'transparent', color: view === v ? '#fff' : '#8E968F',
+                border: 'none', cursor: 'pointer', transition: 'all 140ms',
+              }}>
+                <Icon size={16} />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Content ── */}
+        {loading ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 192, gap: 12, color: '#8E968F' }}>
+            <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} /> Loading prices…
+          </div>
+        ) : filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '64px 0', color: '#8E968F' }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
+            <div style={{ fontWeight: 600 }}>No items found</div>
+            <div style={{ fontSize: 14, marginTop: 6 }}>Try a different search or category</div>
+          </div>
+        ) : view === 'list' ? (
+          <div style={{ background: '#fff', border: '1px solid #EAEDEB', borderRadius: 20, overflow: 'hidden' }}>
+            {/* Table header */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 100px 150px', gap: 16, padding: '12px 24px', background: '#EEF8F0' }}>
+              {['Item', 'Today', 'Yesterday', 'Change'].map((h, i) => (
+                <div key={h} style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#166937', textAlign: i > 0 ? 'right' : 'left' }}>{h}</div>
+              ))}
+            </div>
+            {filtered.map(p => <PriceRow key={p.id} p={p} showAuth={() => setShowAuth(true)} />)}
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px,1fr))', gap: 12 }}>
+            {filtered.map(p => <PriceGridCard key={p.id} p={p} showAuth={() => setShowAuth(true)} />)}
+          </div>
+        )}
+
+        <p style={{ textAlign: 'center', marginTop: 32, fontSize: 13, color: '#8E968F' }}>
+          Prices are indicative rates aggregated from Rythu Bazar, Visakhapatnam.
         </p>
       </div>
-
-      {/* Search + filters + view toggle */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text"
-            placeholder={`Search among ${products.length} items…`}
-            value={query} onChange={e => setQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32]"
-          />
-        </div>
-        <div className="flex gap-2 flex-wrap items-center">
-          {cats.map(c => (
-            <button key={c} onClick={() => setCat(c)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                cat === c
-                  ? c === 'Favorites' ? 'bg-red-500 text-white' : 'bg-[#2E7D32] text-white'
-                  : c === 'Favorites' ? 'bg-white border border-red-200 text-red-500 hover:bg-red-50'
-                                      : 'bg-white border border-gray-200 text-gray-600 hover:border-[#2E7D32] hover:text-[#2E7D32]'
-              }`}>
-              {c === 'Favorites' && <Heart size={13} className={cat === 'Favorites' ? 'fill-white' : 'fill-red-400'} />}
-              {c}
-              {c === 'Favorites' && <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${cat === 'Favorites' ? 'bg-white/20' : 'bg-red-100 text-red-500'}`}>{favorites.size}</span>}
-            </button>
-          ))}
-          {/* View toggle */}
-          <div className="flex items-center border border-gray-200 rounded-full overflow-hidden ml-1">
-            <button onClick={() => setView('list')}
-              className={`p-2 transition-colors ${view === 'list' ? 'bg-[#2E7D32] text-white' : 'text-gray-400 hover:text-[#2E7D32]'}`}>
-              <LayoutList size={16} />
-            </button>
-            <button onClick={() => setView('grid')}
-              className={`p-2 transition-colors ${view === 'grid' ? 'bg-[#2E7D32] text-white' : 'text-gray-400 hover:text-[#2E7D32]'}`}>
-              <LayoutGrid size={16} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {loading ? (
-        <div className="flex items-center justify-center h-48 gap-3 text-gray-400">
-          <Loader2 size={20} className="animate-spin" /> Loading prices…
-        </div>
-      ) : display.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
-          <div className="text-4xl mb-3">{cat === 'Favorites' ? '❤️' : '🔍'}</div>
-          <div className="font-medium">
-            {cat === 'Favorites' ? 'No favourites yet' : 'No items found'}
-          </div>
-          <div className="text-sm mt-1">
-            {cat === 'Favorites'
-              ? 'Tap the ♡ heart on any item to save it here'
-              : 'Try a different search or category'}
-          </div>
-        </div>
-      ) : view === 'list' ? (
-        /* ── LIST VIEW ── */
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="grid grid-cols-[1fr_auto_auto_auto_auto] bg-[#E8F5E9] px-6 py-3 text-xs font-semibold text-[#2E7D32] uppercase tracking-wide">
-            <div>Item</div>
-            <div className="text-center w-20">Today</div>
-            <div className="text-center w-24">Yesterday</div>
-            <div className="text-center w-20">Change</div>
-            <div className="w-8" />
-          </div>
-          {display.map((p, i) => {
-            const chg  = p.price - (p.previous_price || p.price);
-            const prev = p.previous_price || p.price;
-            const src  = imgUrl(p.image_url);
-            const isFav = favorites.has(p.id);
-            return (
-              <div key={p.id} className={`grid grid-cols-[1fr_auto_auto_auto_auto] px-6 py-3.5 items-center border-b border-gray-50 ${i % 2 === 1 ? 'bg-gray-50/40' : ''}`}>
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-[#E8F5E9] flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {src
-                      ? <img src={src} alt={p.name} className="w-full h-full object-cover" />
-                      : <span className="text-xl">{p.emoji || '🥬'}</span>}
-                  </div>
-                  <div>
-                    <div className="font-medium text-sm text-gray-900">{p.name}</div>
-                    <div className="text-xs text-gray-400">{p.telugu_name || ''} · per {p.unit}</div>
-                  </div>
-                </div>
-                <div className="text-center font-bold text-gray-900 w-20">₹{p.price}</div>
-                <div className="text-center text-gray-500 text-sm w-24">₹{prev}</div>
-                <div className="text-center w-20">
-                  {chg === 0
-                    ? <span className="text-gray-400 text-sm font-medium">—</span>
-                    : <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full ${chg < 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
-                        {chg < 0 ? '↓' : '↑'} ₹{Math.abs(chg)}
-                      </span>
-                  }
-                </div>
-                <div className="w-8 flex justify-end">
-                  <button onClick={() => toggleFav(p.id)}
-                    className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
-                    title={isFav ? 'Remove from favorites' : 'Add to favorites'}>
-                    <Heart size={15} className={isFav ? 'fill-red-500 text-red-500' : 'text-gray-300 hover:text-red-400'} />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        /* ── GRID VIEW ── */
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {display.map(p => {
-            const src   = imgUrl(p.image_url);
-            const isFav = favorites.has(p.id);
-            return (
-              <div key={p.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow">
-                {/* Image */}
-                <div className="bg-[#E8F5E9] h-36 flex items-center justify-center overflow-hidden relative">
-                  {src
-                    ? <img src={src} alt={p.name} className="w-full h-full object-cover" />
-                    : <span className="text-6xl">{p.emoji || '🥬'}</span>}
-                  {/* Heart button */}
-                  <button onClick={() => toggleFav(p.id)}
-                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm hover:bg-white transition-colors"
-                    title={isFav ? 'Remove from favorites' : 'Add to favorites'}>
-                    <Heart size={15} className={isFav ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
-                  </button>
-                </div>
-                {/* Info */}
-                <div className="p-3 flex flex-col flex-1">
-                  {p.telugu_name && <div className="text-[10px] text-gray-400 mb-0.5">{p.telugu_name}</div>}
-                  <div className="font-semibold text-sm text-gray-900 leading-tight mb-1">{p.name}</div>
-                  <div className="text-xs text-gray-400 mb-2">per {p.unit}</div>
-                  <div className="font-bold text-gray-900">₹{p.price}</div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <p className="text-xs text-gray-400 mt-6 text-center">Prices are indicative rates from Rythu Bazar, Visakhapatnam.</p>
-
-      {showAuth && <AuthModal mode="login" onClose={() => setShowAuth(false)} onSwitch={() => {}} />}
     </div>
   );
 }

@@ -30,6 +30,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 type Section = 'profile' | 'orders' | 'addresses' | 'notifications' | 'support' | 'about';
+const VALID_TABS: Section[] = ['profile', 'orders', 'addresses', 'notifications', 'support', 'about'];
 
 /* ── Sidebar nav config ──────────────────────────────────── */
 const NAV: { heading: string; items: { id: Section; icon: any; label: string }[] }[] = [
@@ -60,8 +61,13 @@ export default function ProfilePage() {
   const dispatch = useDispatch();
   const router   = useRouter();
 
-  const [showAuth,       setShowAuth]       = useState(false);
-  const [section,        setSection]        = useState<Section>('profile');
+  const [showAuth, setShowAuth] = useState(false);
+  const [section,  setSection]  = useState<Section>('profile');
+
+  useEffect(() => {
+    const tab = new URLSearchParams(window.location.search).get('tab') as Section | null;
+    if (tab && VALID_TABS.includes(tab)) setSection(tab);
+  }, []);
 
   /* Profile */
   const [email,          setEmail]          = useState('');
@@ -444,3 +450,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

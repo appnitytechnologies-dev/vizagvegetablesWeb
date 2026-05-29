@@ -18,6 +18,27 @@ const EMPTY: FormData = {
   landmark: '', city: 'Visakhapatnam', state: 'Andhra Pradesh', pincode: '',
 };
 
+/* ── Field ─────────────────────────────────────────────── */
+function Field({ label, field, placeholder, type = 'text', maxLen, optional = false, form, errors, set }: {
+  label: string; field: keyof FormData; placeholder: string;
+  type?: string; maxLen?: number; optional?: boolean;
+  form: FormData; errors: Errors; set: (key: keyof FormData, val: string) => void;
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-medium text-gray-600 mb-1.5">
+        {label} {optional && <span className="text-gray-400 font-normal">(optional)</span>}
+      </label>
+      <input type={type} value={String(form[field] ?? '')} maxLength={maxLen}
+        onChange={e => set(field, e.target.value)} placeholder={placeholder}
+        className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${
+          errors[field] ? 'border-red-400 focus:ring-red-400' : 'border-gray-200 focus:border-[#2E7D32] focus:ring-[#2E7D32]'
+        }`} />
+      {errors[field] && <p className="text-red-500 text-xs mt-1">{errors[field]}</p>}
+    </div>
+  );
+}
+
 /* ── Address Form ──────────────────────────────────────── */
 function AddressForm({ initial, onSave, onCancel, saving, error }: {
   initial: FormData; onSave: (d: FormData) => void;
@@ -44,22 +65,6 @@ function AddressForm({ initial, onSave, onCancel, saving, error }: {
     setErrors(e);
     return Object.keys(e).length === 0;
   };
-  const Field = ({ label, field, placeholder, type = 'text', maxLen, optional = false }: {
-    label: string; field: keyof FormData; placeholder: string;
-    type?: string; maxLen?: number; optional?: boolean;
-  }) => (
-    <div>
-      <label className="block text-xs font-medium text-gray-600 mb-1.5">
-        {label} {optional && <span className="text-gray-400 font-normal">(optional)</span>}
-      </label>
-      <input type={type} value={String(form[field] ?? '')} maxLength={maxLen}
-        onChange={e => set(field, e.target.value)} placeholder={placeholder}
-        className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-1 ${
-          errors[field] ? 'border-red-400 focus:ring-red-400' : 'border-gray-200 focus:border-[#2E7D32] focus:ring-[#2E7D32]'
-        }`} />
-      {errors[field] && <p className="text-red-500 text-xs mt-1">{errors[field]}</p>}
-    </div>
-  );
 
   return (
     <div className="space-y-4">
@@ -78,15 +83,15 @@ function AddressForm({ initial, onSave, onCancel, saving, error }: {
         </div>
       </div>
       <div className="grid sm:grid-cols-2 gap-4">
-        <Field label="Full Name"     field="name"  placeholder="Ravi Kumar" />
-        <Field label="Mobile Number" field="phone" placeholder="9876543210" type="tel" maxLen={10} />
+        <Field label="Full Name"     field="name"  placeholder="Ravi Kumar"   form={form} errors={errors} set={set} />
+        <Field label="Mobile Number" field="phone" placeholder="9876543210" type="tel" maxLen={10} form={form} errors={errors} set={set} />
       </div>
-      <Field label="House / Flat / Building"  field="house_no" placeholder="Flat 4B, Sunrise Apartments" />
-      <Field label="Area / Street / Locality" field="area"     placeholder="MVP Colony, Near Park" />
-      <Field label="Landmark"                 field="landmark" placeholder="Near Government Hospital" optional />
+      <Field label="House / Flat / Building"  field="house_no" placeholder="Flat 4B, Sunrise Apartments" form={form} errors={errors} set={set} />
+      <Field label="Area / Street / Locality" field="area"     placeholder="MVP Colony, Near Park"        form={form} errors={errors} set={set} />
+      <Field label="Landmark"                 field="landmark" placeholder="Near Government Hospital" optional form={form} errors={errors} set={set} />
       <div className="grid sm:grid-cols-2 gap-4">
-        <Field label="Pincode"     field="pincode" placeholder="530026" type="tel" maxLen={6} />
-        <Field label="City / Town" field="city"    placeholder="Visakhapatnam" />
+        <Field label="Pincode"     field="pincode" placeholder="530026"        type="tel" maxLen={6} form={form} errors={errors} set={set} />
+        <Field label="City / Town" field="city"    placeholder="Visakhapatnam"            form={form} errors={errors} set={set} />
       </div>
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1.5">State</label>
