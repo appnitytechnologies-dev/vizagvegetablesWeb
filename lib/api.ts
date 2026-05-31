@@ -80,3 +80,48 @@ export function imgUrl(image_url: string | null | undefined): string | null {
   if (image_url.startsWith('http')) return image_url;
   return `${BASE_URL}${image_url}`;
 }
+
+/* ─── Market types ───────────────────────────────────────────────────────── */
+export interface ApiMarketCategory {
+  id:          number;
+  name:        string;
+  slug:        string;
+  description: string | null;
+}
+
+export interface ApiMarket {
+  id:            number;
+  category_id:   number;
+  category_name: string;
+  category_slug: string;
+  name:          string;
+  area:          string;
+  address:       string | null;
+  lat:           number | null;
+  lng:           number | null;
+  distance_km:   number | null;
+  rating:        number;
+  reviews_count: number;
+  vendors_count: number;
+  opens:         string | null;
+  closes:        string | null;
+  open_hour:     number | null;
+  close_hour:    number | null;
+  days:          string | null;
+  holiday:       string | null;
+  day_of_week:   string | null;
+  bg_color:      string;
+  facilities:    string[];
+  is_active:     boolean;
+}
+
+export const marketApi = {
+  getAll: (params?: { type?: string; day?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.type) qs.set('type', params.type);
+    if (params?.day)  qs.set('day',  params.day);
+    const q = qs.toString();
+    return api.get<ApiMarket[]>(`/api/markets${q ? `?${q}` : ''}`);
+  },
+  getById: (id: number | string) => api.get<ApiMarket>(`/api/markets/${id}`),
+};

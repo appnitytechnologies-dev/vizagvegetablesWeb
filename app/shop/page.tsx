@@ -27,16 +27,14 @@ function ProductCard({ product }: { product: ApiProduct }) {
     : 0;
 
   return (
-    <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #EAEDEB', overflow: 'hidden', transition: 'box-shadow 140ms' }}
+    <div style={{ background: '#EEF8F0', borderRadius: 20, border: '1px solid #E2EFE5', overflow: 'hidden', transition: 'box-shadow 140ms' }}
          className="shop-card-hover">
       {/* Image area */}
-      <div style={{ position: 'relative', background: '#EEF8F0', height: 200 }}>
-        <Link href={`/shop/${product.id}`} style={{ display: 'block', width: '100%', height: '100%' }}>
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-            {src
-              ? <img src={src} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <span style={{ fontSize: 72 }}>{product.emoji || '🥬'}</span>}
-          </div>
+      <div style={{ position: 'relative', height: 190 }}>
+        <Link href={`/shop/${product.id}`} style={{ display: 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+          {src
+            ? <img src={src} alt={product.name} style={{ maxWidth: '75%', maxHeight: '75%', objectFit: 'contain' }} />
+            : <span style={{ fontSize: 72 }}>{product.emoji || '🥬'}</span>}
         </Link>
 
         {/* Price drop badge */}
@@ -49,13 +47,14 @@ function ProductCard({ product }: { product: ApiProduct }) {
         {/* Heart button */}
         <button
           onClick={() => dispatch(toggleFavourite(product.id))}
-          style={{ position: 'absolute', top: 12, right: 12, width: 32, height: 32, borderRadius: '50%', background: '#fff', border: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.12)' }}
+          style={{ position: 'absolute', top: 10, right: 10, width: 30, height: 30, borderRadius: '50%', background: 'rgba(255,255,255,0.85)', border: '1px solid #E2EFE5', cursor: 'pointer', display: 'grid', placeItems: 'center', backdropFilter: 'blur(4px)' }}
         >
-          <Heart size={14} style={isFav ? { fill: '#C8553D', color: '#C8553D' } : { color: '#B7BDB8' }} />
+          <Heart size={13} style={isFav ? { fill: '#C8553D', color: '#C8553D' } : { color: '#8E968F' }} />
         </button>
       </div>
 
-      <div style={{ padding: '14px 16px' }}>
+      {/* Card body — white section */}
+      <div style={{ background: '#fff', borderRadius: '0 0 20px 20px', padding: '14px 16px' }}>
         <div style={{ fontSize: 11.5, color: '#8E968F', marginBottom: 2, fontFamily: 'var(--font-telugu,sans-serif)' }}>
           {product.telugu_name || ''}
         </div>

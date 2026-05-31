@@ -1,12 +1,13 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ShoppingCart, Bell, Menu, X, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Bell, Menu, X, ChevronDown, MapPin, LocateFixed } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectCartCount } from '@/store/cartSlice';
 import { selectAuth, logout } from '@/store/authSlice';
 import { clearToken } from '@/lib/api';
+import { useLocation } from '@/hooks/useLocation';
 import AuthModal from './AuthModal';
 
 const NAV_LINKS = [
@@ -23,9 +24,22 @@ export default function Navbar() {
   const cartCount = useSelector(selectCartCount);
   const auth      = useSelector(selectAuth);
 
-  const [mobileOpen,   setMobileOpen]   = useState(false);
-  const [authModal,    setAuthModal]    = useState<'login' | 'signup' | null>(null);
-  const [userDropdown, setUserDropdown] = useState(false);
+  const [mobileOpen,    setMobileOpen]    = useState(false);
+  const [authModal,     setAuthModal]     = useState<'login' | 'signup' | null>(null);
+  const [userDropdown,  setUserDropdown]  = useState(false);
+  const [locOpen,       setLocOpen]       = useState(false);
+  const [locInput,      setLocInput]      = useState('');
+  const locRef = useRef<HTMLDivElement>(null);
+  const { locationText, loading: locLoading, isCustom, setCustomLocation, resetToGPS } = useLocation();
+
+  /* close location popover on outside click */
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (locRef.current && !locRef.current.contains(e.target as Node)) setLocOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const handleLogout = () => {
     clearToken();
@@ -45,14 +59,66 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
 
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-              <div className="w-9 h-9 rounded-xl bg-[#3D8C40] flex items-center justify-center text-xl shadow-sm">🥦</div>
-              <div className="leading-tight">
+            {/* Logo + Location */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <Link href="/" className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-[#3D8C40] flex items-center justify-center text-xl shadow-sm">🥦</div>
                 <div className="text-gray-900 font-bold text-base leading-none">Vizag Vegetables</div>
-                <div className="text-[#3D8C40] text-[11px] font-medium mt-0.5">Rythu Bazar Fresh</div>
+              </Link>
+
+              {/* Location picker */}
+              <div ref={locRef} className="relative hidden sm:block">
+                <button
+                  onClick={() => { setLocInput(locationText); setLocOpen(v => !v); }}
+                  className="flex items-center gap-1 text-[11px] text-gray-500 hover:text-[#3D8C40] transition-colors border border-gray-200 hover:border-[#3D8C40] rounded-full px-2.5 py-1"
+                >
+                  <MapPin size={11} className="text-[#3D8C40] flex-shrink-0" />
+                  <span className="max-w-[140px] truncate">
+                    {locLoading ? 'Locating…' : locationText || 'Set location'}
+                  </span>
+                  <ChevronDown size={10} className="text-gray-400 flex-shrink-0" />
+                </button>
+
+                {locOpen && (
+                  <div className="absolute left-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 p-4 z-50">
+                    <p className="text-sm font-semibold text-gray-800 mb-1">Set your area</p>
+                    <p className="text-xs text-gray-400 mb-3">Type your neighbourhood, area or city</p>
+                    <input
+                      autoFocus
+                      type="text"
+                      placeholder="e.g. Gajuwaka, Vizag"
+                      value={locInput}
+                      onChange={e => setLocInput(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && locInput.trim()) {
+                          setCustomLocation(locInput.trim());
+                          setLocOpen(false);
+                        }
+                      }}
+                      className="w-full border border-gray-200 focus:border-[#3D8C40] rounded-lg px-3 py-2 text-sm outline-none mb-3"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        disabled={!locInput.trim()}
+                        onClick={() => { if (locInput.trim()) { setCustomLocation(locInput.trim()); setLocOpen(false); } }}
+                        className="flex-1 bg-[#3D8C40] disabled:opacity-40 text-white text-sm font-semibold py-2 rounded-lg hover:bg-[#357A38] transition-colors"
+                      >
+                        Save
+                      </button>
+                      {isCustom && (
+                        <button
+                          onClick={() => { resetToGPS(); setLocOpen(false); }}
+                          className="flex items-center gap-1.5 border border-gray-200 text-gray-600 text-sm px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          <LocateFixed size={13} className="text-[#3D8C40]" />
+                          GPS
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-            </Link>
+            </div>
 
             {/* Desktop nav */}
             <div className="hidden md:flex items-center gap-1">

@@ -155,10 +155,6 @@ export default function PricesPage() {
     return matchCat && matchQ;
   });
 
-  const upCount   = products.filter(p => p.price > (p.previous_price || p.price)).length;
-  const downCount = products.filter(p => p.price < (p.previous_price || p.price)).length;
-  const sameCount = products.length - upCount - downCount;
-
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
@@ -179,25 +175,6 @@ export default function PricesPage() {
       </div>
 
       <div className="vv-container" style={{ paddingBottom: 80 }}>
-
-        {/* ── Stats cards ── */}
-        {!loading && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 40 }}>
-            {[
-              { label: 'Items tracked', value: products.length, color: '#0E1612', prefix: '' },
-              { label: 'Up today',      value: upCount,         color: '#C8553D', prefix: '↑ ' },
-              { label: 'Down today',    value: downCount,       color: '#166937', prefix: '↓ ' },
-              { label: 'Unchanged',     value: sameCount,       color: '#0E1612', prefix: '— ' },
-            ].map(s => (
-              <div key={s.label} style={{ padding: '20px 24px', background: '#fff', border: '1px solid #EAEDEB', borderRadius: 14 }}>
-                <div style={{ fontSize: 12.5, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#8E968F' }}>{s.label}</div>
-                <div style={{ fontFamily: 'var(--font-poppins,Poppins,sans-serif)', fontWeight: 700, fontSize: 'clamp(32px,3vw,48px)', letterSpacing: '-0.025em', color: s.color, marginTop: 6, lineHeight: 1 }}>
-                  {s.prefix}{s.value}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* ── Controls ── */}
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 28, paddingBottom: 20, borderBottom: '1px solid #EAEDEB' }}>
