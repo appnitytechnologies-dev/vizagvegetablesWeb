@@ -7,23 +7,82 @@ import { api, setToken } from '@/lib/api';
 
 interface Props { mode: 'login' | 'signup'; onClose: () => void; onSwitch: (m: 'login' | 'signup') => void; }
 
+function loadGoogleScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if ((window as any).google?.accounts) { resolve(); return; }
+    const existing = document.getElementById('gsi-script');
+    if (existing) { existing.addEventListener('load', () => resolve()); return; }
+    const s = document.createElement('script');
+    s.id = 'gsi-script';
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.async = true;
+    s.defer = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Failed to load Google Sign-In'));
+    document.head.appendChild(s);
+  });
+}
+
 export default function AuthModal({ mode, onClose, onSwitch }: Props) {
   const dispatch   = useDispatch();
-  const [step, setStep]       = useState<'phone' | 'otp'>('phone');
-  const [phone, setPhone]     = useState('');
-  const [name, setName]       = useState('');
-  const [otp, setOtp]         = useState(['', '', '', '', '', '']);
-  const [timer, setTimer]     = useState(30);
+  const [step, setStep]         = useState<'phone' | 'otp'>('phone');
+  const [phone, setPhone]       = useState('');
+  const [name, setName]         = useState('');
+  const [otp, setOtp]           = useState(['', '', '', '', '', '']);
+  const [timer, setTimer]       = useState(30);
   const [counting, setCounting] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
-  const inputRefs             = useRef<(HTMLInputElement | null)[]>([]);
+  const [loading, setLoading]   = useState(false);
+  const [gLoading, setGLoading] = useState(false);
+  const [error, setError]       = useState('');
+  const inputRefs               = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     if (!counting) return;
     const id = setInterval(() => setTimer(t => { if (t <= 1) { clearInterval(id); setCounting(false); return 0; } return t - 1; }), 1000);
     return () => clearInterval(id);
   }, [counting]);
+
+  const handleGoogleLogin = async () => {
+    setGLoading(true);
+    setError('');
+    try {
+      await loadGoogleScript();
+      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+      if (!clientId || clientId === 'REPLACE_ME.apps.googleusercontent.com') {
+        setError('Google Sign-In is not configured yet. Please use OTP login.');
+        setGLoading(false);
+        return;
+      }
+      (window as any).google.accounts.id.initialize({
+        client_id: clientId,
+        callback: async (response: { credential: string }) => {
+          try {
+            const res = await api.post<{ token: string; user: { id: string; phone: string; name: string }; isNewUser: boolean }>(
+              '/api/auth/google', { idToken: response.credential }
+            );
+            setToken(res.token);
+            const displayName = res.user.name || `User ${res.user.phone?.slice(-4) || 'Google'}`;
+            localStorage.setItem('user_name', displayName);
+            dispatch(loginSuccess({ token: res.token, id: res.user.id, phone: res.user.phone || '', name: displayName }));
+            onClose();
+          } catch (e: any) {
+            setError(e.message || 'Google sign-in failed');
+          } finally {
+            setGLoading(false);
+          }
+        },
+      });
+      (window as any).google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          setGLoading(false);
+          setError('Google sign-in was dismissed. Try again or use OTP.');
+        }
+      });
+    } catch (e: any) {
+      setError(e.message || 'Failed to load Google Sign-In');
+      setGLoading(false);
+    }
+  };
 
   const sendOtp = async () => {
     if (phone.length !== 10) return;
@@ -131,7 +190,33 @@ export default function AuthModal({ mode, onClose, onSwitch }: Props) {
                 {loading ? <><Loader2 size={16} className="animate-spin" /> Sending…</> : <>Send OTP <ArrowRight size={16} /></>}
               </button>
 
-              <p className="text-center text-sm text-gray-500 mt-5">
+              {/* Divider */}
+              <div className="flex items-center gap-3 my-1">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-xs text-gray-400 font-medium">or continue with</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+
+              {/* Google */}
+              <button
+                onClick={handleGoogleLogin}
+                disabled={gLoading}
+                className="w-full flex items-center justify-center gap-3 border border-gray-200 rounded-xl py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {gLoading ? (
+                  <Loader2 size={18} className="animate-spin text-gray-400" />
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+                    <path d="M43.611 20.083H42V20H24v8h11.303C33.654 32.657 29.332 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" fill="#FFC107"/>
+                    <path d="M6.306 14.691l6.571 4.819C14.655 15.108 19.000 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z" fill="#FF3D00"/>
+                    <path d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0124 36c-5.311 0-9.821-3.317-11.387-7.945l-6.522 5.025C9.505 39.556 16.227 44 24 44z" fill="#4CAF50"/>
+                    <path d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 01-4.087 5.571l.003-.002 6.19 5.238C36.971 39.801 44 34.5 44 24c0-1.341-.138-2.65-.389-3.917z" fill="#1976D2"/>
+                  </svg>
+                )}
+                {gLoading ? 'Signing in…' : 'Sign in with Google'}
+              </button>
+
+              <p className="text-center text-sm text-gray-500 mt-2">
                 {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
                 <button onClick={() => onSwitch(mode === 'login' ? 'signup' : 'login')} className="text-[#2E7D32] font-semibold hover:underline">
                   {mode === 'login' ? 'Sign Up' : 'Login'}

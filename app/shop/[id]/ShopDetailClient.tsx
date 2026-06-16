@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ChevronLeft, Heart, Share2, ShoppingCart, Check } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, increaseQty, decreaseQty, selectItemQty } from '@/store/cartSlice';
-import { toggleFavourite, selectIsFavourite } from '@/store/favouritesSlice';
+import { syncToggleFavourite, selectIsFavourite } from '@/store/favouritesSlice';
 import { RootState } from '@/store';
 import { ApiProduct, imgUrl } from '@/lib/api';
 
@@ -46,7 +46,7 @@ export default function ShopDetailClient({ product }: { product: ApiProduct }) {
             </span>
           )}
           <div className="absolute top-4 right-4 flex gap-2">
-            <button onClick={() => dispatch(toggleFavourite(product.id))}
+            <button onClick={() => dispatch(syncToggleFavourite(product.id))}
               className="p-2.5 bg-white rounded-full shadow-sm hover:scale-110 transition-transform">
               <Heart size={18} className={isFav ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
             </button>

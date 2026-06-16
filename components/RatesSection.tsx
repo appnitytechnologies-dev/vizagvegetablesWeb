@@ -2,7 +2,7 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useState } from 'react';
 import Link from 'next/link';
-import { toggleFavourite, selectIsFavourite } from '@/store/favouritesSlice';
+import { syncToggleFavourite, selectIsFavourite } from '@/store/favouritesSlice';
 import { selectAuth } from '@/store/authSlice';
 import { ApiProduct, imgUrl, api } from '@/lib/api';
 import { Heart } from 'lucide-react';
@@ -20,8 +20,7 @@ function RateCard({ product }: { product: ApiProduct }) {
   const handleFav = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!auth.isLoggedIn) { setShowAuth(true); return; }
-    dispatch(toggleFavourite(product.id));
-    api.post(`/api/favorites/${product.id}`, {}).catch(() => {});
+    dispatch(syncToggleFavourite(product.id));
   };
 
   return (

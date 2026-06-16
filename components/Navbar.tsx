@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ShoppingCart, Bell, Menu, X, ChevronDown, MapPin, LocateFixed } from 'lucide-react';
+import { ShoppingCart, Bell, Heart, Menu, X, ChevronDown, MapPin, LocateFixed } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectCartCount } from '@/store/cartSlice';
 import { selectAuth, logout } from '@/store/authSlice';
@@ -144,6 +144,11 @@ export default function Navbar() {
                 )}
               </Link>
 
+              {/* Favourites */}
+              <Link href="/favourites" className="relative p-2 rounded-full hover:bg-gray-100 transition-colors hidden sm:flex">
+                <Heart size={20} className="text-gray-600" />
+              </Link>
+
               {/* Notifications */}
               <Link href="/profile?tab=notifications" className="relative p-2 rounded-full hover:bg-gray-100 transition-colors hidden sm:flex">
                 <Bell size={20} className="text-gray-600" />
@@ -165,6 +170,7 @@ export default function Navbar() {
                       {[
                         { href: '/profile',                    label: '👤 My Profile'    },
                         { href: '/profile?tab=orders',         label: '📦 My Orders'     },
+                        { href: '/favourites',                 label: '❤️ Favourites'    },
                         { href: '/order-tracking',             label: '🛵 Track Order'   },
                         { href: '/profile?tab=notifications',  label: '🔔 Notifications' },
                       ].map(item => (

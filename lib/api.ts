@@ -112,6 +112,7 @@ export interface ApiMarket {
   day_of_week:   string | null;
   bg_color:      string;
   facilities:    string[];
+  images:        string[] | null;
   is_active:     boolean;
 }
 

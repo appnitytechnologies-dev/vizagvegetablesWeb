@@ -2,7 +2,7 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { selectFavouriteIds, toggleFavourite } from '@/store/favouritesSlice';
+import { selectFavouriteIds, syncToggleFavourite } from '@/store/favouritesSlice';
 import { ApiProduct, imgUrl, api } from '@/lib/api';
 import { Heart } from 'lucide-react';
 
@@ -171,8 +171,7 @@ export default function FavouritesSection() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
             {products.map(p => (
               <FavCard key={p.id} product={p} onUnfav={() => {
-                dispatch(toggleFavourite(p.id));
-                api.post(`/api/favorites/${p.id}`, {}).catch(() => {});
+                dispatch(syncToggleFavourite(p.id));
               }} />
             ))}
           </div>

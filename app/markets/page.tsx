@@ -1,7 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { MapPin, Navigation, Clock, Users, Star } from 'lucide-react';
-import { marketApi, ApiMarket } from '@/lib/api';
+import { marketApi, ApiMarket, imgUrl } from '@/lib/api';
 
 // ── Haversine distance ────────────────────────────────────────
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
@@ -31,10 +32,20 @@ const DAY_LABELS: Record<string, string> = {
   Thu: 'Thursday', Fri: 'Friday', Sat: 'Saturday',
 };
 
-function MarketPhotoPlaceholder({ bgColor }: { bgColor: string }) {
+function MarketPhoto({ m }: { m: ApiMarket }) {
+  const src = m.images?.[0] ? imgUrl(m.images[0]) : null;
   return (
-    <div style={{ background: bgColor, height: 156, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-      <span style={{ fontSize: 52 }}>🏪</span>
+    <div style={{ position: 'relative', paddingBottom: '58%', background: m.bg_color, overflow: 'hidden' }}>
+      {src
+        ? <img
+            src={src}
+            alt={m.name}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+          />
+        : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 52 }}>🏪</span>
+          </div>
+      }
     </div>
   );
 }
@@ -138,7 +149,7 @@ export default function MarketsPage() {
 
                   {/* Photo + badge */}
                   <div style={{ position: 'relative' }}>
-                    <MarketPhotoPlaceholder bgColor={m.bg_color} />
+                    <MarketPhoto m={m} />
                     <span style={{
                       position: 'absolute', top: 12, right: 12,
                       fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
@@ -187,21 +198,33 @@ export default function MarketsPage() {
                       </div>
                     )}
 
-                    {/* Google Maps */}
-                    <a
-                      href={m.lat && m.lng
-                        ? `https://maps.google.com/?q=${m.lat},${m.lng}`
-                        : `https://maps.google.com/?q=${encodeURIComponent(m.name + ' ' + m.area + ' Visakhapatnam')}`}
-                      target="_blank" rel="noopener noreferrer"
-                      style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                        width: '100%', padding: '11px 0', borderRadius: 12,
-                        border: '1.5px solid #EAEDEB', color: '#0E1612', fontSize: 13.5, fontWeight: 600,
-                        textDecoration: 'none', transition: 'all 140ms', fontFamily: 'inherit',
-                      }}
-                    >
-                      <MapPin size={14} /> Open in Google Maps
-                    </a>
+                    {/* Actions */}
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <Link
+                        href={`/markets/${m.id}`}
+                        style={{
+                          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                          padding: '10px 0', borderRadius: 12, background: '#166937', color: '#fff',
+                          fontSize: 13, fontWeight: 600, textDecoration: 'none',
+                        }}
+                      >
+                        View Details
+                      </Link>
+                      <a
+                        href={m.lat && m.lng
+                          ? `https://maps.google.com/?q=${m.lat},${m.lng}`
+                          : `https://maps.google.com/?q=${encodeURIComponent(m.name + ' ' + m.area + ' Visakhapatnam')}`}
+                        target="_blank" rel="noopener noreferrer"
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                          padding: '10px 14px', borderRadius: 12,
+                          border: '1.5px solid #EAEDEB', color: '#0E1612', fontSize: 13, fontWeight: 600,
+                          textDecoration: 'none',
+                        }}
+                      >
+                        <MapPin size={14} />
+                      </a>
+                    </div>
                   </div>
                 </div>
               );

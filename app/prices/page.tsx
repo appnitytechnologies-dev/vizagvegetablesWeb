@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Search, Loader2, LayoutList, LayoutGrid, Heart, Share2 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectAuth } from '@/store/authSlice';
-import { selectIsFavourite, selectFavouriteIds, toggleFavourite } from '@/store/favouritesSlice';
+import { selectIsFavourite, selectFavouriteIds, syncToggleFavourite } from '@/store/favouritesSlice';
 import { api, ApiProduct, imgUrl } from '@/lib/api';
 import AuthModal from '@/components/AuthModal';
 import { RootState } from '@/store';
@@ -25,8 +25,7 @@ function PriceRow({ p, showAuth }: { p: ApiProduct; showAuth: () => void }) {
 
   const handleFav = () => {
     if (!auth.isLoggedIn) { showAuth(); return; }
-    dispatch(toggleFavourite(p.id));
-    api.post(`/api/favorites/${p.id}`, {}).catch(() => {});
+    dispatch(syncToggleFavourite(p.id));
   };
 
   const handleShare = () => {
@@ -101,8 +100,7 @@ function PriceGridCard({ p, showAuth }: { p: ApiProduct; showAuth: () => void })
 
   const handleFav = () => {
     if (!auth.isLoggedIn) { showAuth(); return; }
-    dispatch(toggleFavourite(p.id));
-    api.post(`/api/favorites/${p.id}`, {}).catch(() => {});
+    dispatch(syncToggleFavourite(p.id));
   };
 
   return (

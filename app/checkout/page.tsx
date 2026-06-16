@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectCartItems, selectCartTotal, clearCart } from '@/store/cartSlice';
 import { selectAuth } from '@/store/authSlice';
 import { api, imgUrl } from '@/lib/api';
-import { Check, Loader2, LogIn, Plus, ChevronDown, ChevronUp, Home, Briefcase, MapPin } from 'lucide-react';
+import { Check, Loader2, LogIn, Plus, ChevronDown, ChevronUp, Home, Briefcase, MapPin, Eye, EyeOff, CreditCard } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
 import { UserAddress, INDIAN_STATES, fmtAddress } from '@/lib/address';
 
@@ -40,7 +40,16 @@ const EMPTY_FORM: NewAddrForm = {
   landmark: '', city: 'Visakhapatnam', state: 'Andhra Pradesh', pincode: '', save: true,
 };
 
-
+function loadRazorpayScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if ((window as any).Razorpay) { resolve(); return; }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload  = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Razorpay SDK'));
+    document.body.appendChild(script);
+  });
+}
 
 /* ─── Page ────────────────────────────────────────────── */
 export default function CheckoutPage() {
@@ -60,6 +69,30 @@ export default function CheckoutPage() {
   const [showAuth,     setShowAuth]     = useState(false);
   const [slot,         setSlot]         = useState(SLOTS[0]);
   const [orderPlaced,  setOrderPlaced]  = useState(false);
+
+  /* Card details */
+  const [cardNum,    setCardNum]    = useState('');
+  const [cardName,   setCardName]   = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv,    setCardCvv]    = useState('');
+  const [showCvv,    setShowCvv]    = useState(false);
+
+  const fmtCardNum = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 16);
+    return d.replace(/(.{4})(?=.)/g, '$1 ');
+  };
+  const fmtExpiry = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 4);
+    return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d;
+  };
+  const cardBrand = () => {
+    const d = cardNum.replace(/\s/g, '');
+    if (/^4/.test(d)) return '💳 Visa';
+    if (/^5[1-5]/.test(d)) return '💳 Mastercard';
+    if (/^6/.test(d)) return '💳 RuPay';
+    if (/^3[47]/.test(d)) return '💳 Amex';
+    return '';
+  };
 
   /* Address state */
   const [addresses,    setAddresses]    = useState<UserAddress[]>([]);
@@ -146,31 +179,92 @@ export default function CheckoutPage() {
     setStep(1);
   };
 
-  /* ── Place order ── */
-  const placeOrder = async () => {
-    let deliveryAddress = '';
+  /* ── Shared: build delivery address string ── */
+  const buildDeliveryAddress = () => {
     if (useNew || (!selectedId && addresses.length === 0)) {
       const f = newForm;
       const parts = [f.house_no.trim(), f.area.trim()];
       if (f.landmark.trim()) parts.push(f.landmark.trim());
       parts.push(`${f.city.trim()}, ${f.state.trim()} – ${f.pincode.trim()}`);
-      deliveryAddress = parts.join(', ');
-    } else {
-      const addr = addresses.find(a => a.id === selectedId);
-      deliveryAddress = addr ? fmtAddress(addr) : 'N/A';
+      return parts.join(', ');
     }
+    const addr = addresses.find(a => a.id === selectedId);
+    return addr ? fmtAddress(addr) : 'N/A';
+  };
+
+  /* ── Place order ── */
+  const placeOrder = async () => {
+    const deliveryAddress = buildDeliveryAddress();
+    const orderItems = items.map(i => ({ product_id: i.id, quantity: i.quantity, unit_price: i.price }));
+    const grandTotal = total + delivery;
 
     setLoading(true); setError('');
     try {
-      const res = await api.post<{ id: string }>('/api/orders', {
-        items: items.map(i => ({ product_id: i.id, quantity: i.quantity, unit_price: i.price })),
-        delivery_address: deliveryAddress,
-        delivery_slot:    slot,
-        payment_method:   method,
-      });
-      setOrderPlaced(true);
-      dispatch(clearCart());
-      router.push(`/order-success?id=${res.id}`);
+      if (method === 'cod') {
+        // ── Cash on delivery — direct order creation ──
+        const res = await api.post<{ id: string }>('/api/orders', {
+          items:            orderItems,
+          delivery_address: deliveryAddress,
+          delivery_slot:    slot,
+          payment_method:   'cod',
+          delivery_fee:     delivery,
+        });
+        setOrderPlaced(true);
+        dispatch(clearCart());
+        api.delete('/api/cart').catch(() => {});
+        router.push(`/order-success?id=${res.id}`);
+      } else {
+        // ── Online payment — Razorpay checkout ──
+        const rzp = await api.post<{
+          razorpay_order_id: string; amount: number; currency: string; key_id: string;
+        }>('/api/payments/create-order', { amount: grandTotal });
+
+        await loadRazorpayScript();
+
+        const orderData = {
+          items:            orderItems,
+          delivery_address: deliveryAddress,
+          delivery_slot:    slot,
+          payment_method:   method,
+          delivery_fee:     delivery,
+        };
+
+        await new Promise<void>((resolve, reject) => {
+          const methodMap: Record<string, string> = { upi: 'upi', card: 'card', netbanking: 'netbanking' };
+          const checkout = new (window as any).Razorpay({
+            key:         rzp.key_id,
+            amount:      rzp.amount,
+            currency:    rzp.currency,
+            name:        'Vizag Vegetables',
+            description: 'Fresh Vegetables Order',
+            order_id:    rzp.razorpay_order_id,
+            prefill:     { name: auth.name || '', contact: auth.phone || '', method: methodMap[method] },
+            theme:       { color: '#2E7D32' },
+            handler: async (response: any) => {
+              try {
+                const order = await api.post<{ id: string }>('/api/payments/verify', {
+                  razorpay_order_id:   response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature:  response.razorpay_signature,
+                  orderData,
+                });
+                setOrderPlaced(true);
+                dispatch(clearCart());
+                api.delete('/api/cart').catch(() => {});
+                router.push(`/order-success?id=${order.id}`);
+                resolve();
+              } catch (e) { reject(e); }
+            },
+            modal: {
+              ondismiss: () => {
+                setLoading(false);
+                resolve(); // dismissed — no error, just stop loading
+              },
+            },
+          });
+          checkout.open();
+        });
+      }
     } catch (e: any) {
       setError(e.message || 'Failed to place order. Please try again.');
     } finally { setLoading(false); }
@@ -415,11 +509,74 @@ export default function CheckoutPage() {
                       </div>
                       <input type="radio" checked={method === m.id} onChange={() => setMethod(m.id)} className="accent-[#2E7D32]" />
                     </label>
+
+                    {/* UPI ID field */}
                     {method === 'upi' && m.id === 'upi' && (
-                      <div className="mt-2 border border-[#2E7D32] rounded-xl px-4 py-2">
+                      <div className="mt-2 border border-[#2E7D32] rounded-xl px-4 py-2.5">
                         <input type="text" placeholder="Enter UPI ID (e.g. name@upi)"
                           value={upiId} onChange={e => setUpiId(e.target.value)}
                           className="w-full text-sm focus:outline-none" />
+                      </div>
+                    )}
+
+                    {/* Card details form */}
+                    {method === 'card' && m.id === 'card' && (
+                      <div className="mt-2 border border-[#2E7D32] rounded-xl p-4 space-y-3 bg-white">
+                        {/* Card number */}
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Card Number</label>
+                          <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2.5 focus-within:border-[#2E7D32] focus-within:ring-1 focus-within:ring-[#2E7D32] gap-2">
+                            <CreditCard size={16} className="text-gray-400 flex-shrink-0" />
+                            <input
+                              type="text" inputMode="numeric" placeholder="1234 5678 9012 3456"
+                              value={cardNum}
+                              onChange={e => setCardNum(fmtCardNum(e.target.value))}
+                              maxLength={19}
+                              className="flex-1 text-sm focus:outline-none tracking-widest"
+                            />
+                            {cardBrand() && <span className="text-xs text-gray-500 flex-shrink-0">{cardBrand()}</span>}
+                          </div>
+                        </div>
+
+                        {/* Name on card */}
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Name on Card</label>
+                          <input
+                            type="text" placeholder="RAVI KUMAR"
+                            value={cardName} onChange={e => setCardName(e.target.value.toUpperCase())}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32] tracking-wider"
+                          />
+                        </div>
+
+                        {/* Expiry + CVV */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Expiry Date</label>
+                            <input
+                              type="text" inputMode="numeric" placeholder="MM/YY"
+                              value={cardExpiry}
+                              onChange={e => setCardExpiry(fmtExpiry(e.target.value))}
+                              maxLength={5}
+                              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#2E7D32] focus:ring-1 focus:ring-[#2E7D32]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">CVV</label>
+                            <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2.5 focus-within:border-[#2E7D32] focus-within:ring-1 focus-within:ring-[#2E7D32] gap-2">
+                              <input
+                                type={showCvv ? 'text' : 'password'} inputMode="numeric"
+                                placeholder="•••" maxLength={4}
+                                value={cardCvv} onChange={e => setCardCvv(e.target.value.replace(/\D/g, ''))}
+                                className="flex-1 text-sm focus:outline-none w-0"
+                              />
+                              <button type="button" onClick={() => setShowCvv(v => !v)} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+                                {showCvv ? <EyeOff size={15} /> : <Eye size={15} />}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-gray-400 flex items-center gap-1">🔒 Your card details are encrypted and secure</p>
                       </div>
                     )}
                   </div>

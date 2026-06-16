@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Search, Heart, Loader2, Clock } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, increaseQty, decreaseQty, selectItemQty } from '@/store/cartSlice';
-import { toggleFavourite, selectIsFavourite } from '@/store/favouritesSlice';
+import { syncToggleFavourite, selectIsFavourite } from '@/store/favouritesSlice';
 import { RootState } from '@/store';
 import { api, ApiProduct, ApiCategory, imgUrl } from '@/lib/api';
 
@@ -46,7 +46,7 @@ function ProductCard({ product }: { product: ApiProduct }) {
 
         {/* Heart button */}
         <button
-          onClick={() => dispatch(toggleFavourite(product.id))}
+          onClick={() => dispatch(syncToggleFavourite(product.id))}
           style={{ position: 'absolute', top: 10, right: 10, width: 30, height: 30, borderRadius: '50%', background: 'rgba(255,255,255,0.85)', border: '1px solid #E2EFE5', cursor: 'pointer', display: 'grid', placeItems: 'center', backdropFilter: 'blur(4px)' }}
         >
           <Heart size={13} style={isFav ? { fill: '#C8553D', color: '#C8553D' } : { color: '#8E968F' }} />

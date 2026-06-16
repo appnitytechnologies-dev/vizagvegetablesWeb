@@ -1,29 +1,15 @@
 'use client';
-import { useState } from 'react';
 import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, increaseQty, decreaseQty, selectItemQty } from '@/store/cartSlice';
-import { toggleFavourite, selectIsFavourite } from '@/store/favouritesSlice';
-import { selectAuth } from '@/store/authSlice';
-import { RootState } from '@/store';
 import { ApiProduct, imgUrl } from '@/lib/api';
-import { Heart, Plus } from 'lucide-react';
-import AuthModal from '@/components/AuthModal';
+import { Plus } from 'lucide-react';
 
 function ProductCard({ product }: { product: ApiProduct }) {
   const dispatch  = useDispatch();
   const qty       = useSelector(selectItemQty(product.id));
-  const isFav     = useSelector((s: RootState) => selectIsFavourite(product.id)(s));
-  const auth      = useSelector(selectAuth);
-  const [showAuth, setShowAuth] = useState(false);
   const src       = imgUrl(product.image_url);
   const trend     = product.price - (product.previous_price || product.price);
-
-  const handleFav = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (!auth.isLoggedIn) { setShowAuth(true); return; }
-    dispatch(toggleFavourite(product.id));
-  };
 
   return (
     <>
@@ -82,10 +68,7 @@ function ProductCard({ product }: { product: ApiProduct }) {
         </div>
       </div>
     </Link>
-    {showAuth && (
-      <AuthModal mode="login" onClose={() => setShowAuth(false)} onSwitch={() => {}} />
-    )}
-    </>
+</>
   );
 }
 
