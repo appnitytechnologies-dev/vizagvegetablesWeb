@@ -1,4 +1,5 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+// Empty string routes through Next.js rewrites (avoids mixed content on HTTPS)
+const BASE_URL = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000');
 
 /* ─── Token helpers (stored as "user_token" to avoid clash with admin) ─── */
 export const getToken  = () => typeof window !== 'undefined' ? localStorage.getItem('user_token') : null;
