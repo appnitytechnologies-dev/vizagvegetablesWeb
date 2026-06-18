@@ -78,7 +78,8 @@ export interface ApiOrder {
 export function imgUrl(image_url: string | null | undefined): string | null {
   if (!image_url) return null;
   if (image_url.startsWith('http')) return image_url;
-  return `${BASE_URL}${image_url}`;
+  // Use relative path so Next.js rewrites proxy it via HTTPS (avoids mixed content)
+  return image_url.startsWith('/') ? image_url : `/${image_url}`;
 }
 
 /* ─── Market types ───────────────────────────────────────────────────────── */
