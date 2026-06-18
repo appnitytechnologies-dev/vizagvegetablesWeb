@@ -1,15 +1,15 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useAppDispatch } from '@/store/hooks';
 import { Heart, ShoppingCart, Share2 } from 'lucide-react';
 import { selectFavouriteIds, syncToggleFavourite } from '@/store/favouritesSlice';
 import { addToCart } from '@/store/cartSlice';
 import { api, ApiProduct, imgUrl } from '@/lib/api';
-import type { AppDispatch } from '@/store';
 
 export default function FavouritesPage() {
-  const dispatch   = useDispatch<AppDispatch>();
+  const dispatch   = useAppDispatch();
   const ids        = useSelector(selectFavouriteIds);
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [loading,  setLoading]  = useState(true);

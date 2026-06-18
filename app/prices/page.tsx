@@ -1,7 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Search, Loader2, LayoutList, LayoutGrid, Heart, Share2 } from 'lucide-react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useAppDispatch } from '@/store/hooks';
 import { selectAuth } from '@/store/authSlice';
 import { selectIsFavourite, selectFavouriteIds, syncToggleFavourite } from '@/store/favouritesSlice';
 import { api, ApiProduct, imgUrl } from '@/lib/api';
@@ -17,7 +18,7 @@ const CATS = [
 ];
 
 function PriceRow({ p, showAuth }: { p: ApiProduct; showAuth: () => void }) {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const auth     = useSelector(selectAuth);
   const isFav    = useSelector((s: RootState) => selectIsFavourite(p.id)(s));
   const src      = imgUrl(p.image_url);
@@ -92,7 +93,7 @@ function PriceRow({ p, showAuth }: { p: ApiProduct; showAuth: () => void }) {
 }
 
 function PriceGridCard({ p, showAuth }: { p: ApiProduct; showAuth: () => void }) {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const auth     = useSelector(selectAuth);
   const isFav    = useSelector((s: RootState) => selectIsFavourite(p.id)(s));
   const src      = imgUrl(p.image_url);

@@ -1,5 +1,6 @@
 'use client';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useAppDispatch } from '@/store/hooks';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { selectFavouriteIds, syncToggleFavourite } from '@/store/favouritesSlice';
@@ -50,7 +51,7 @@ function FavCard({ product, onUnfav }: { product: ApiProduct; onUnfav: () => voi
 }
 
 export default function FavouritesSection() {
-  const dispatch   = useDispatch();
+  const dispatch   = useAppDispatch();
   const favIds     = useSelector(selectFavouriteIds);
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [loading, setLoading]   = useState(false);

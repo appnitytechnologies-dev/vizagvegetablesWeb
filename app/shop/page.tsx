@@ -2,7 +2,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Search, Heart, Loader2, Clock } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useAppDispatch } from '@/store/hooks';
 import { addToCart, increaseQty, decreaseQty, selectItemQty } from '@/store/cartSlice';
 import { syncToggleFavourite, selectIsFavourite } from '@/store/favouritesSlice';
 import { RootState } from '@/store';
@@ -18,7 +19,7 @@ const SORT_OPTIONS = [
 ];
 
 function ProductCard({ product }: { product: ApiProduct }) {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const qty  = useSelector(selectItemQty(product.id));
   const isFav = useSelector((s: RootState) => selectIsFavourite(product.id)(s));
   const src  = imgUrl(product.image_url);

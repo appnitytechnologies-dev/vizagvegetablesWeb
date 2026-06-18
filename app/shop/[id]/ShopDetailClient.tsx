@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, Heart, Share2, ShoppingCart, Check } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useAppDispatch } from '@/store/hooks';
 import { addToCart, increaseQty, decreaseQty, selectItemQty } from '@/store/cartSlice';
 import { syncToggleFavourite, selectIsFavourite } from '@/store/favouritesSlice';
 import { RootState } from '@/store';
@@ -11,7 +12,7 @@ import { ApiProduct, imgUrl } from '@/lib/api';
 const QTY_OPTIONS = ['1', '2', '5', '10'];
 
 export default function ShopDetailClient({ product }: { product: ApiProduct }) {
-  const dispatch  = useDispatch();
+  const dispatch  = useAppDispatch();
   const [qty,    setQty]    = useState(QTY_OPTIONS[0]);
   const [shared, setShared] = useState(false);
   const cartQty = useSelector(selectItemQty(product.id));

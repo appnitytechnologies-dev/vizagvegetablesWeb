@@ -1,5 +1,6 @@
 'use client';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useAppDispatch } from '@/store/hooks';
 import { useState } from 'react';
 import Link from 'next/link';
 import { syncToggleFavourite, selectIsFavourite } from '@/store/favouritesSlice';
@@ -10,7 +11,7 @@ import DragScroll from '@/components/DragScroll';
 import AuthModal from '@/components/AuthModal';
 
 function RateCard({ product }: { product: ApiProduct }) {
-  const dispatch           = useDispatch();
+  const dispatch           = useAppDispatch();
   const auth               = useSelector(selectAuth);
   const isFav              = useSelector(selectIsFavourite(product.id));
   const [showAuth, setShowAuth] = useState(false);
