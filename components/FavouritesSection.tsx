@@ -7,7 +7,7 @@ import { selectFavouriteIds, syncToggleFavourite } from '@/store/favouritesSlice
 import { ApiProduct, imgUrl, api } from '@/lib/api';
 import { Heart } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_URL = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000');
 
 function FavCard({ product, onUnfav }: { product: ApiProduct; onUnfav: () => void }) {
   const src   = imgUrl(product.image_url);
