@@ -25,7 +25,7 @@ export default function AboutSection() {
         {/* Stats */}
         <div className="bg-[#2E7D32] rounded-2xl p-6 text-white text-center">
           <div className="text-4xl mb-2">🥦</div>
-          <h3 className="font-bold text-lg mb-4">Vizag Vegetables</h3>
+          <h3 className="font-bold text-lg mb-4">YZAG Fresh</h3>
           <div className="flex justify-center gap-8">
             {STATS.map(s => (
               <div key={s.l}>
@@ -61,7 +61,7 @@ export default function AboutSection() {
           ))}
         </div>
 
-        <p className="text-center text-xs text-gray-400">Made with ❤️ in Visakhapatnam · © 2026 Vizag Vegetables</p>
+        <p className="text-center text-xs text-gray-400">Made with ❤️ in Visakhapatnam · © 2026 YZAG Fresh</p>
       </div>
     </div>
   );

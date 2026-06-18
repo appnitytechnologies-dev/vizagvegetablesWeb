@@ -72,14 +72,14 @@ export default function SupportSection() {
               </div>
             </a>
 
-            <a href="mailto:support@vizagvegetables.in"
+            <a href="mailto:support@yzagfresh.in"
               className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-2xl p-4 hover:shadow-sm transition-shadow">
               <div className="w-10 h-10 bg-[#E8F5E9] rounded-full flex items-center justify-center flex-shrink-0">
                 <Mail size={18} className="text-[#2E7D32]" />
               </div>
               <div>
                 <div className="text-xs text-gray-400">Email</div>
-                <div className="font-bold text-gray-900 text-sm">support@vizagvegetables.in</div>
+                <div className="font-bold text-gray-900 text-sm">support@yzagfresh.in</div>
               </div>
             </a>
 

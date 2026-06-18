@@ -11,8 +11,8 @@ export default function Footer() {
             <div className="flex items-center gap-2.5 mb-4">
               <div className="w-9 h-9 rounded-xl bg-[#3D8C40] flex items-center justify-center text-xl">🥦</div>
               <div>
-                <div className="font-bold text-base">Vizag Vegetables</div>
-                <div className="text-gray-400 text-xs mt-0.5">Rythu Bazar Fresh</div>
+                <div className="font-bold text-base">YZAG Fresh</div>
+                <div className="text-gray-400 text-xs mt-0.5">Local. Fresh. Connected.</div>
               </div>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed mb-4">
@@ -49,7 +49,7 @@ export default function Footer() {
             <h4 className="font-semibold text-xs uppercase tracking-widest text-gray-500 mb-4">Contact Us</h4>
             <ul className="space-y-2.5 text-sm text-gray-400">
               <li className="flex items-center gap-2"><span>📞</span> +91 89195 00000</li>
-              <li className="flex items-center gap-2"><span>✉️</span> support@vizagvegetables.in</li>
+              <li className="flex items-center gap-2"><span>✉️</span> support@yzagfresh.in</li>
               <li className="flex items-center gap-2"><span>📍</span> Gajuwaka, Visakhapatnam</li>
               <li className="flex items-center gap-2 pt-1"><span>🕐</span> <span className="text-gray-500">Mon–Sat · 8 AM – 8 PM</span></li>
             </ul>
@@ -57,7 +57,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-6 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-500">
-          <span>© 2026 Vizag Vegetables · Made with ❤️ in Visakhapatnam</span>
+          <span>© 2026 YZAG Fresh · Made with ❤️ in Visakhapatnam</span>
           <div className="flex gap-5">
             <Link href="/about"   className="hover:text-gray-300 transition-colors">About</Link>
             <Link href="/support" className="hover:text-gray-300 transition-colors">Privacy Policy</Link>

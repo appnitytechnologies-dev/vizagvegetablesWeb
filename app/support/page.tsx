@@ -101,14 +101,14 @@ export default function SupportPage() {
             </div>
           </a>
 
-          <a href="mailto:support@vizagvegetables.in"
+          <a href="mailto:support@yzagfresh.in"
             className="flex items-center gap-4 bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
             <div className="w-12 h-12 bg-[#E8F5E9] rounded-full flex items-center justify-center flex-shrink-0">
               <Mail size={20} className="text-[#2E7D32]" />
             </div>
             <div>
               <div className="text-xs text-gray-400 font-medium">Email</div>
-              <div className="font-bold text-gray-900">support@vizagvegetables.in</div>
+              <div className="font-bold text-gray-900">support@yzagfresh.in</div>
             </div>
           </a>
 

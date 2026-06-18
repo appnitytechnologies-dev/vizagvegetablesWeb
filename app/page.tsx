@@ -290,7 +290,7 @@ export default async function HomePage() {
       <section style={{ padding: '80px 0', background: '#F5FAF6' }}>
         <div className="vv-container">
           <div className="section-head" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-            <div className="eyebrow" style={{ color: '#1F8A4C', marginBottom: 8 }}>Why Vizag Vegetables</div>
+            <div className="eyebrow" style={{ color: '#1F8A4C', marginBottom: 8 }}>Why YZAG Fresh</div>
             <h2 style={{ fontFamily: 'var(--font-poppins,Poppins,sans-serif)', fontWeight: 700, fontSize: 'clamp(28px,3.5vw,42px)', letterSpacing: '-0.025em', color: '#0E1612', margin: 0, maxWidth: 640 }}>
               More than delivery. We&apos;re your <span className="serif-it" style={{ color: '#166937' }}>daily price companion.</span>
             </h2>

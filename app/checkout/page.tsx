@@ -235,7 +235,7 @@ export default function CheckoutPage() {
             key:         rzp.key_id,
             amount:      rzp.amount,
             currency:    rzp.currency,
-            name:        'Vizag Vegetables',
+            name:        'YZAG Fresh',
             description: 'Fresh Vegetables Order',
             order_id:    rzp.razorpay_order_id,
             prefill:     { name: auth.name || '', contact: auth.phone || '', method: methodMap[method] },

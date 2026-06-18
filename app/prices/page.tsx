@@ -29,7 +29,7 @@ function PriceRow({ p, showAuth }: { p: ApiProduct; showAuth: () => void }) {
   };
 
   const handleShare = () => {
-    const text = `${p.name}${p.telugu_name ? ` (${p.telugu_name})` : ''} at Vizag Vegetables — today's Rythu Bazar rate: ₹${p.price}/${p.unit}`;
+    const text = `${p.name}${p.telugu_name ? ` (${p.telugu_name})` : ''} at YZAG Fresh — today's Rythu Bazar rate: ₹${p.price}/${p.unit}`;
     if (navigator.share) navigator.share({ title: p.name, text }).catch(() => {});
     else navigator.clipboard?.writeText(text);
   };

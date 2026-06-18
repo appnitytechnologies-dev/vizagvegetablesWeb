@@ -36,7 +36,7 @@ export default function FavouritesPage() {
 
   const handleShare = (p: ApiProduct) => {
     if (navigator.share) {
-      navigator.share({ title: p.name, text: `${p.name} ₹${Math.round(p.price)}/${p.unit} — Vizag Vegetables`, url: `${window.location.origin}/shop/${p.id}` }).catch(() => {});
+      navigator.share({ title: p.name, text: `${p.name} ₹${Math.round(p.price)}/${p.unit} — YZAG Fresh`, url: `${window.location.origin}/shop/${p.id}` }).catch(() => {});
     } else {
       navigator.clipboard?.writeText(`${window.location.origin}/shop/${p.id}`).catch(() => {});
     }

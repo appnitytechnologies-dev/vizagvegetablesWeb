@@ -145,7 +145,7 @@ export default function AuthModal({ mode, onClose, onSwitch }: Props) {
           <div className="flex items-center gap-3 mb-1">
             <span className="text-3xl">🥦</span>
             <div>
-              <div className="font-bold text-xl">Vizag Vegetables</div>
+              <div className="font-bold text-xl">YZAG Fresh</div>
               <div className="text-green-200 text-sm">{mode === 'login' ? 'Welcome back!' : 'Create your account'}</div>
             </div>
           </div>

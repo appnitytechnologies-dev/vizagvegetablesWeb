@@ -63,7 +63,7 @@ export default function Navbar() {
             <div className="flex items-center gap-3 flex-shrink-0">
               <Link href="/" className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-[#3D8C40] flex items-center justify-center text-xl shadow-sm">🥦</div>
-                <div className="text-gray-900 font-bold text-base leading-none">Vizag Vegetables</div>
+                <div className="text-gray-900 font-bold text-base leading-none">YZAG Fresh</div>
               </Link>
 
               {/* Location picker */}

@@ -25,7 +25,7 @@ const notoSansTelugu = Noto_Sans_Telugu({
 });
 
 export const metadata: Metadata = {
-  title: 'Vizag Vegetables — Fresh from Rythu Bazar',
+  title: 'YZAG Fresh — Local. Fresh. Connected.',
   description: 'Order fresh vegetables online. Rythu Bazar prices updated daily. Delivered across Visakhapatnam.',
 };
 

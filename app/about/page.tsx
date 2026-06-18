@@ -7,8 +7,8 @@ export default function AboutPage() {
       <section className="bg-[#2E7D32] text-white py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="text-6xl mb-4">🥦</div>
-          <h1 className="text-4xl font-bold mb-3">About Vizag Vegetables</h1>
-          <p className="text-green-200 text-lg">Farm to Table · Rythu Bazar Prices</p>
+          <h1 className="text-4xl font-bold mb-3">About YZAG Fresh</h1>
+          <p className="text-green-200 text-lg">Local. Fresh. Connected.</p>
           <div className="flex justify-center gap-12 mt-10">
             {STATS.map(s => (
               <div key={s.l} className="text-center">
@@ -50,7 +50,7 @@ export default function AboutPage() {
           ))}
         </div>
 
-        <p className="text-center text-sm text-gray-400">Made with ❤️ in Visakhapatnam · © 2026 Vizag Vegetables</p>
+        <p className="text-center text-sm text-gray-400">Made with ❤️ in Visakhapatnam · © 2026 YZAG Fresh</p>
       </div>
     </div>
   );
