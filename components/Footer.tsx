@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
@@ -8,12 +9,8 @@ export default function Footer() {
 
           {/* Brand */}
           <div className="md:col-span-1">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-[#3D8C40] flex items-center justify-center text-xl">🥦</div>
-              <div>
-                <div className="font-bold text-base">YZAG Fresh</div>
-                <div className="text-gray-400 text-xs mt-0.5">Local. Fresh. Connected.</div>
-              </div>
+            <div className="flex items-center mb-4">
+              <Image src="/logo.jpeg" alt="YZAG Fresh" width={130} height={52} className="h-12 w-auto object-contain rounded-lg" />
             </div>
             <p className="text-gray-400 text-sm leading-relaxed mb-4">
               Farm-fresh vegetables from Visakhapatnam&apos;s Rythu Bazar, delivered to your door every morning.
