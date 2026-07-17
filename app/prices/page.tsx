@@ -158,7 +158,7 @@ export default function PricesPage() {
 
   return (
     <div style={{ background: '#FAFAF7', minHeight: '100vh' }}>
-      {showAuth && <AuthModal mode="login" onClose={() => setShowAuth(false)} onSwitch={() => {}} />}
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
 
       {/* ── Page Hero ── */}
       <div style={{ padding: '64px 0 48px' }}>

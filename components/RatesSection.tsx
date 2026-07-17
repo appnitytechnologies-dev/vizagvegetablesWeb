@@ -64,7 +64,7 @@ function RateCard({ product }: { product: ApiProduct }) {
         </div>
       </div>
       {showAuth && (
-        <AuthModal mode="login" onClose={() => setShowAuth(false)} onSwitch={() => {}} />
+        <AuthModal onClose={() => setShowAuth(false)} />
       )}
     </>
   );

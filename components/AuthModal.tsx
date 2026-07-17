@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { loginSuccess } from '@/store/authSlice';
 import { api, setToken, getToken } from '@/lib/api';
 
-interface Props { mode: 'login' | 'signup'; onClose: () => void; onSwitch: (m: 'login' | 'signup') => void; }
+interface Props { onClose: () => void; }
 
 function loadGoogleScript(): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -37,7 +37,7 @@ function loadGoogleScript(): Promise<void> {
  *     if (phone.length !== 10) return;
  *     setLoading(true); setError('');
  *     try {
- *       await api.post('/api/auth/send-otp', { phone, mode });
+ *       await api.post('/api/auth/send-otp', { phone });
  *       setStep('otp'); setTimer(30); setCounting(true);
  *     } catch (e: any) {
  *       setError(e.message || 'Failed to send OTP');
@@ -49,7 +49,7 @@ function loadGoogleScript(): Promise<void> {
  *     if (code.length !== 6) return;
  *     setLoading(true); setError('');
  *     try {
- *       const res = await api.post('/api/auth/verify-otp', { phone, otp: code, name, mode });
+ *       const res = await api.post('/api/auth/verify-otp', { phone, otp: code, name });
  *       ...
  *     } catch (e: any) {
  *       setError(e.message || 'Invalid OTP');
@@ -57,7 +57,7 @@ function loadGoogleScript(): Promise<void> {
  *   };
  * ───────────────────────────────────────────────────────────────────────── */
 
-export default function AuthModal({ mode, onClose, onSwitch }: Props) {
+export default function AuthModal({ onClose }: Props) {
   const dispatch   = useDispatch();
   const [step, setStep]         = useState<'google' | 'profile'>('google');
   const [name, setName]         = useState('');
@@ -147,7 +147,7 @@ export default function AuthModal({ mode, onClose, onSwitch }: Props) {
             <span className="text-3xl">🥦</span>
             <div>
               <div className="font-bold text-xl">YZAG Fresh</div>
-              <div className="text-green-200 text-sm">{mode === 'login' ? 'Welcome back!' : 'Create your account'}</div>
+              <div className="text-green-200 text-sm">Welcome!</div>
             </div>
           </div>
         </div>
@@ -159,9 +159,7 @@ export default function AuthModal({ mode, onClose, onSwitch }: Props) {
 
           {step === 'google' ? (
             <>
-              <h2 className="text-xl font-bold text-gray-900 mb-1">
-                {mode === 'login' ? 'Login to your account' : 'Sign up for free'}
-              </h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-1">Sign in to YZAG Fresh</h2>
               <p className="text-gray-500 text-sm mb-5">Continue with your Google account</p>
 
               {/* Google */}
@@ -182,13 +180,6 @@ export default function AuthModal({ mode, onClose, onSwitch }: Props) {
                 )}
                 {gLoading ? 'Signing in…' : 'Sign in with Google'}
               </button>
-
-              <p className="text-center text-sm text-gray-500 mt-2">
-                {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-                <button onClick={() => onSwitch(mode === 'login' ? 'signup' : 'login')} className="text-[#2E7D32] font-semibold hover:underline">
-                  {mode === 'login' ? 'Sign Up' : 'Login'}
-                </button>
-              </p>
             </>
           ) : (
             <>

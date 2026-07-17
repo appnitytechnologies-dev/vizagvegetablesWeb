@@ -26,7 +26,7 @@ export default function Navbar() {
   const auth      = useSelector(selectAuth);
 
   const [mobileOpen,    setMobileOpen]    = useState(false);
-  const [authModal,     setAuthModal]     = useState<'login' | 'signup' | null>(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [userDropdown,  setUserDropdown]  = useState(false);
   const [locOpen,       setLocOpen]       = useState(false);
   const [locInput,      setLocInput]      = useState('');
@@ -187,13 +187,9 @@ export default function Navbar() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2 ml-1">
-                  <button onClick={() => setAuthModal('login')}
-                    className="text-gray-700 text-sm font-medium hover:text-[#3D8C40] px-3 py-1.5 rounded-full transition-colors">
-                    Login
-                  </button>
-                  <button onClick={() => setAuthModal('signup')}
+                  <button onClick={() => setAuthModalOpen(true)}
                     className="bg-[#3D8C40] text-white text-sm font-semibold px-4 py-1.5 rounded-full hover:bg-[#357A38] transition-colors shadow-sm">
-                    Sign Up
+                    Sign In
                   </button>
                 </div>
               )}
@@ -216,18 +212,16 @@ export default function Navbar() {
               </Link>
             ))}
             {!auth.isLoggedIn && (
-              <div className="flex gap-2 pt-2 border-t border-gray-100 mt-1">
-                <button onClick={() => { setAuthModal('login'); setMobileOpen(false); }}
-                  className="flex-1 border border-gray-200 text-gray-700 text-sm font-medium py-2 rounded-xl hover:bg-gray-50">Login</button>
-                <button onClick={() => { setAuthModal('signup'); setMobileOpen(false); }}
-                  className="flex-1 bg-[#3D8C40] text-white text-sm font-semibold py-2 rounded-xl hover:bg-[#357A38]">Sign Up</button>
+              <div className="pt-2 border-t border-gray-100 mt-1">
+                <button onClick={() => { setAuthModalOpen(true); setMobileOpen(false); }}
+                  className="w-full bg-[#3D8C40] text-white text-sm font-semibold py-2 rounded-xl hover:bg-[#357A38]">Sign In</button>
               </div>
             )}
           </div>
         )}
       </nav>
 
-      {authModal && <AuthModal mode={authModal} onClose={() => setAuthModal(null)} onSwitch={m => setAuthModal(m)} />}
+      {authModalOpen && <AuthModal onClose={() => setAuthModalOpen(false)} />}
     </>
   );
 }
