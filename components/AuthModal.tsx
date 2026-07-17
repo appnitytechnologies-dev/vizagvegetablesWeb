@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { X, ArrowRight, Loader2 } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { loginSuccess, logout } from '@/store/authSlice';
-import { api, setToken, getToken, clearToken } from '@/lib/api';
+import { api, setToken, clearToken } from '@/lib/api';
 
 interface Props { onClose: () => void; startOnProfile?: boolean; initialName?: string; }
 
@@ -133,11 +133,12 @@ export default function AuthModal({ onClose, startOnProfile, initialName }: Prop
     if (!name.trim() || phone.length !== 10) return;
     setLoading(true); setError('');
     try {
-      const res = await api.put<{ id: string; phone: string; name: string }>('/api/users/profile', {
+      const res = await api.put<{ id: string; phone: string; name: string; token: string }>('/api/users/profile', {
         name: name.trim(), phone,
       });
+      setToken(res.token);
       localStorage.setItem('user_name', res.name);
-      dispatch(loginSuccess({ token: getToken() || '', id: res.id, phone: res.phone, name: res.name }));
+      dispatch(loginSuccess({ token: res.token, id: res.id, phone: res.phone, name: res.name }));
       onClose();
     } catch (e: any) {
       setError(e.message || 'Failed to save. Please try again.');
