@@ -42,6 +42,12 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  /* Safety net — a Google login started but never finished (phone still
+     missing) shouldn't silently leave the user "logged in" forever. */
+  useEffect(() => {
+    if (auth.isLoggedIn && !auth.phone) setAuthModalOpen(true);
+  }, [auth.isLoggedIn, auth.phone]);
+
   const handleLogout = () => {
     clearToken();
     localStorage.removeItem('user_name');
@@ -221,7 +227,13 @@ export default function Navbar() {
         )}
       </nav>
 
-      {authModalOpen && <AuthModal onClose={() => setAuthModalOpen(false)} />}
+      {authModalOpen && (
+        <AuthModal
+          onClose={() => setAuthModalOpen(false)}
+          startOnProfile={auth.isLoggedIn && !auth.phone}
+          initialName={auth.name}
+        />
+      )}
     </>
   );
 }

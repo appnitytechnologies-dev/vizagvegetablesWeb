@@ -2,10 +2,10 @@
 import { useState } from 'react';
 import { X, ArrowRight, Loader2 } from 'lucide-react';
 import { useDispatch } from 'react-redux';
-import { loginSuccess } from '@/store/authSlice';
-import { api, setToken, getToken } from '@/lib/api';
+import { loginSuccess, logout } from '@/store/authSlice';
+import { api, setToken, getToken, clearToken } from '@/lib/api';
 
-interface Props { onClose: () => void; }
+interface Props { onClose: () => void; startOnProfile?: boolean; initialName?: string; }
 
 function loadGoogleScript(): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -57,14 +57,25 @@ function loadGoogleScript(): Promise<void> {
  *   };
  * ───────────────────────────────────────────────────────────────────────── */
 
-export default function AuthModal({ onClose }: Props) {
+export default function AuthModal({ onClose, startOnProfile, initialName }: Props) {
   const dispatch   = useDispatch();
-  const [step, setStep]         = useState<'google' | 'profile'>('google');
-  const [name, setName]         = useState('');
+  const [step, setStep]         = useState<'google' | 'profile'>(startOnProfile ? 'profile' : 'google');
+  const [name, setName]         = useState(initialName || '');
   const [phone, setPhone]       = useState('');
   const [loading, setLoading]   = useState(false);
   const [gLoading, setGLoading] = useState(false);
   const [error, setError]       = useState('');
+
+  // Once Google auth succeeds, the profile step is mandatory — closing the
+  // modal here would leave the user "logged in" with no phone on file.
+  const dismissable = step !== 'profile';
+
+  const handleLogoutInstead = () => {
+    clearToken();
+    localStorage.removeItem('user_name');
+    dispatch(logout());
+    onClose();
+  };
 
   const handleGoogleLogin = async () => {
     setGLoading(true);
@@ -135,14 +146,16 @@ export default function AuthModal({ onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={dismissable ? onClose : undefined} />
 
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
         {/* Green header */}
         <div className="bg-[#2E7D32] px-6 py-6 text-white">
-          <button onClick={onClose} className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-white/20 transition-colors">
-            <X size={18} />
-          </button>
+          {dismissable && (
+            <button onClick={onClose} className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-white/20 transition-colors">
+              <X size={18} />
+            </button>
+          )}
           <div className="flex items-center gap-3 mb-1">
             <span className="text-3xl">🥦</span>
             <div>
@@ -209,6 +222,10 @@ export default function AuthModal({ onClose }: Props) {
               <button onClick={submitProfile} disabled={!name.trim() || phone.length !== 10 || loading}
                 className="w-full bg-[#2E7D32] hover:bg-[#1B5E20] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
                 {loading ? <><Loader2 size={16} className="animate-spin" /> Saving…</> : <>Continue <ArrowRight size={16} /></>}
+              </button>
+
+              <button onClick={handleLogoutInstead} className="w-full text-center text-sm text-gray-400 hover:text-gray-600 mt-3">
+                Not now, log out instead
               </button>
             </>
           )}
