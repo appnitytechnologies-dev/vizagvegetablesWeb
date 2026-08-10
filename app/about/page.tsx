@@ -37,7 +37,7 @@ export default function AboutPage() {
         {/* Links */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           {[
-            { label: 'Privacy Policy',     icon: '🔒', href: '#' },
+            { label: 'Privacy Policy',     icon: '🔒', href: '/privacy' },
             { label: 'Terms of Service',   icon: '📄', href: '#' },
             { label: 'Rate the App',       icon: '⭐', href: '#' },
             { label: 'Follow on Instagram',icon: '📸', href: '#' },
