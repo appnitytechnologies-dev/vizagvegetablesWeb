@@ -38,7 +38,7 @@ export default function AboutPage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           {[
             { label: 'Privacy Policy',     icon: '🔒', href: '/privacy' },
-            { label: 'Terms of Service',   icon: '📄', href: '#' },
+            { label: 'Terms of Service',   icon: '📄', href: '/terms' },
             { label: 'Rate the App',       icon: '⭐', href: '#' },
             { label: 'Follow on Instagram',icon: '📸', href: '#' },
           ].map((l, i, arr) => (
