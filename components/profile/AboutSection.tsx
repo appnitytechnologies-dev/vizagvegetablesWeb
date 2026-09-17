@@ -6,8 +6,8 @@ const STATS = [
 ];
 
 const LINKS = [
-  { label: 'Privacy Policy',      icon: '🔒', href: '#' },
-  { label: 'Terms of Service',    icon: '📄', href: '#' },
+  { label: 'Privacy Policy',      icon: '🔒', href: '/privacy' },
+  { label: 'Terms of Service',    icon: '📄', href: '/terms' },
   { label: 'Rate the App',        icon: '⭐', href: '#' },
   { label: 'Follow on Instagram', icon: '📸', href: '#' },
 ];

@@ -57,8 +57,8 @@ export default function Footer() {
           <span>© 2026 YZAG Fresh · Made with ❤️ in Visakhapatnam</span>
           <div className="flex gap-5">
             <Link href="/about"   className="hover:text-gray-300 transition-colors">About</Link>
-            <Link href="/support" className="hover:text-gray-300 transition-colors">Privacy Policy</Link>
-            <Link href="/support" className="hover:text-gray-300 transition-colors">Terms</Link>
+            <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy Policy</Link>
+            <Link href="/terms"   className="hover:text-gray-300 transition-colors">Terms</Link>
           </div>
         </div>
       </div>
