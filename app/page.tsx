@@ -2,6 +2,7 @@ import Link from 'next/link';
 import HomeClient from './HomeClient';
 import FavouritesSection from '@/components/FavouritesSection';
 import RatesSection from '@/components/RatesSection';
+import HeroSlider from '@/components/HeroSlider';
 import { ApiProduct } from '@/lib/api';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
@@ -10,7 +11,7 @@ async function fetchProducts(limit = 8): Promise<ApiProduct[]> {
   try {
     const res = await fetch(`${API_URL}/api/products?limit=${limit}`, { cache: 'no-store' });
     if (!res.ok) return [];
-    return res.json();
+    return await res.json();
   } catch { return []; }
 }
 
@@ -18,7 +19,7 @@ async function fetchRates(limit = 8): Promise<ApiProduct[]> {
   try {
     const res = await fetch(`${API_URL}/api/market-rates?limit=${limit}`, { cache: 'no-store' });
     if (!res.ok) return [];
-    return res.json();
+    return await res.json();
   } catch { return []; }
 }
 
@@ -37,8 +38,6 @@ const MARKETS = [
   { id: 'gopalapatnam', name: 'Gopalapatnam Rythu Bazar', area: 'Gopalapatnam', dist: 8,   vendors: 95,  status: 'open' },
   { id: 'pendurthi',    name: 'Pendurthi Rythu Bazar',    area: 'Pendurthi',    dist: 18,  vendors: 75,  status: 'closed' },
 ];
-
-const HERO_VEGS = ['🍅','🥕','🥦','🍆','🫑','🌶️','🧄','🧅'];
 
 const WHY_ITEMS = [
   { icon: '📊', title: 'Daily Rythu Bazar rates',  body: 'Live wholesale prices from all 4 Rythu Bazars, refreshed every morning at 7 AM. No markup, no haggling.' },
@@ -74,188 +73,7 @@ export default async function HomePage() {
   return (
     <div style={{ background: '#FAFAF7' }}>
 
-      {/* ── HERO ─────────────────────────────────────────────────── */}
-      <section className="hero-village">
-        {/* Village scene background */}
-        <div className="hero-village-scene">
-          <svg viewBox="0 0 1200 520" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
-            <defs>
-              <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#F5F0E6"/><stop offset="100%" stopColor="#FCF4E4"/>
-              </linearGradient>
-              <linearGradient id="hill1" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#5BB87A"/><stop offset="100%" stopColor="#2BA15D"/>
-              </linearGradient>
-              <linearGradient id="hill2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#4DBE7B"/><stop offset="100%" stopColor="#1F8A4C"/>
-              </linearGradient>
-              <linearGradient id="hill3" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#166937"/><stop offset="100%" stopColor="#0A3D24"/>
-              </linearGradient>
-              <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#C9A878"/><stop offset="100%" stopColor="#A88556"/>
-              </linearGradient>
-            </defs>
-            <rect width="1200" height="520" fill="url(#sky)"/>
-            <circle cx="950" cy="120" r="60" fill="#F2C97B" opacity="0.7"/>
-            <circle cx="950" cy="120" r="42" fill="#E8A33D"/>
-            <g fill="#FFFFFF" opacity="0.78">
-              <ellipse cx="200" cy="100" rx="60" ry="14"/><ellipse cx="240" cy="90" rx="40" ry="12"/>
-              <ellipse cx="600" cy="80" rx="80" ry="16"/><ellipse cx="650" cy="68" rx="50" ry="12"/>
-            </g>
-            <path d="M0 280 Q 200 200 400 250 T 800 230 T 1200 260 L 1200 520 L 0 520 Z" fill="url(#hill3)"/>
-            <path d="M0 320 Q 150 260 320 300 T 640 280 T 960 300 T 1200 290 L 1200 520 L 0 520 Z" fill="url(#hill2)"/>
-            <path d="M0 360 Q 180 320 360 350 T 720 330 T 1080 360 T 1200 340 L 1200 520 L 0 520 Z" fill="url(#hill1)"/>
-            <g transform="translate(80 280)">
-              <rect x="4" y="0" width="6" height="60" fill="#5B3A1A"/>
-              <path d="M7 0 Q -10 -12 -22 -8 M7 0 Q 24 -12 36 -8 M7 0 Q -4 -22 -16 -28 M7 0 Q 18 -22 30 -28 M7 0 Q 7 -28 7 -36" stroke="#0E5C2F" strokeWidth="4" fill="none" strokeLinecap="round"/>
-            </g>
-            <g transform="translate(1080 270)">
-              <rect x="4" y="0" width="6" height="70" fill="#5B3A1A"/>
-              <path d="M7 0 Q -10 -12 -22 -8 M7 0 Q 24 -12 36 -8 M7 0 Q -4 -22 -16 -28 M7 0 Q 18 -22 30 -28 M7 0 Q 7 -28 7 -36" stroke="#0E5C2F" strokeWidth="4" fill="none" strokeLinecap="round"/>
-            </g>
-            <g transform="translate(700 290)">
-              <polygon points="0,40 30,0 60,40" fill="#A85420"/>
-              <rect x="6" y="40" width="48" height="36" fill="#F2C97B"/>
-              <rect x="22" y="54" width="16" height="22" fill="#5B3A1A"/>
-              <rect x="6" y="40" width="48" height="4" fill="#7A4216"/>
-            </g>
-            <g transform="translate(770 282)">
-              <polygon points="0,48 36,0 72,48" fill="#8B4220"/>
-              <rect x="6" y="48" width="60" height="44" fill="#E8A33D"/>
-              <rect x="28" y="64" width="16" height="28" fill="#5B3A1A"/>
-              <rect x="6" y="48" width="60" height="4" fill="#7A4216"/>
-              <rect x="14" y="60" width="10" height="10" fill="#F4D690"/>
-              <rect x="48" y="60" width="10" height="10" fill="#F4D690"/>
-            </g>
-            <g transform="translate(852 296)">
-              <polygon points="0,36 26,0 52,36" fill="#A85420"/>
-              <rect x="4" y="36" width="44" height="30" fill="#D49B5F"/>
-              <rect x="18" y="48" width="14" height="18" fill="#5B3A1A"/>
-            </g>
-            <path d="M0 430 Q 600 400 1200 430 L 1200 520 L 0 520 Z" fill="url(#ground)"/>
-            <g stroke="#7A4216" strokeWidth="1.2" opacity="0.35" fill="none">
-              <path d="M0 460 Q 600 440 1200 460"/><path d="M0 480 Q 600 470 1200 480"/><path d="M0 500 Q 600 494 1200 500"/>
-            </g>
-            {Array.from({length: 24}).map((_, i) => {
-              const x = 30 + i * 50 + (i % 2) * 16;
-              return <g key={i} transform={`translate(${x} 440)`}>
-                <ellipse cx="0" cy="6" rx="8" ry="3" fill="#0E5C2F" opacity="0.3"/>
-                <path d="M0 6 Q -8 -8 -4 -16 M0 6 Q 8 -8 4 -16 M0 6 Q 0 -10 0 -20" stroke="#1F8A4C" strokeWidth="3" strokeLinecap="round" fill="none"/>
-              </g>;
-            })}
-            <g transform="translate(180 320)">
-              <ellipse cx="0" cy="170" rx="36" ry="4" fill="#0E1410" opacity="0.15"/>
-              <rect x="-10" y="120" width="8" height="50" fill="#3A4D8A"/>
-              <rect x="2" y="120" width="8" height="50" fill="#3A4D8A"/>
-              <ellipse cx="-6" cy="170" rx="8" ry="3" fill="#2A2418"/>
-              <ellipse cx="6" cy="170" rx="8" ry="3" fill="#2A2418"/>
-              <path d="M-20 80 L20 80 L24 130 L-24 130 Z" fill="#FCF4E4"/>
-              <path d="M-22 80 L-26 110 L-20 130" stroke="#E8843D" strokeWidth="3" fill="#FCF4E4"/>
-              <path d="M22 80 L26 110 L20 130" stroke="#E8843D" strokeWidth="3" fill="#FCF4E4"/>
-              <rect x="-6" y="56" width="12" height="14" fill="#C9966B"/>
-              <circle cx="0" cy="40" r="22" fill="#D9A678"/>
-              <path d="M-20 32 Q -22 18 0 14 Q 22 18 20 32 Q 22 22 14 16 Q 0 10 -14 16 Q -22 22 -20 32 Z" fill="#2A2418"/>
-              <circle cx="-7" cy="40" r="2" fill="#2A2418"/>
-              <circle cx="7" cy="40" r="2" fill="#2A2418"/>
-              <path d="M-6 50 Q 0 54 6 50" stroke="#2A2418" strokeWidth="1.6" strokeLinecap="round" fill="none"/>
-              <g transform="translate(30 110)">
-                <ellipse cx="0" cy="40" rx="46" ry="10" fill="#7A4216"/>
-                <path d="M-46 40 L-40 0 L40 0 L46 40 Z" fill="#B89968"/>
-                <path d="M-40 0 L-44 -8 L42 -8 L40 0" stroke="#7A4216" strokeWidth="2" fill="#A88556"/>
-                <circle cx="-22" cy="-4" r="9" fill="#D94F38"/>
-                <circle cx="-4" cy="-7" r="9" fill="#D94F38"/>
-                <circle cx="14" cy="-5" r="9" fill="#D94F38"/>
-                <circle cx="28" cy="-2" r="9" fill="#D94F38"/>
-                <path d="M-20 -10 Q -24 -22 -16 -28 M-12 -12 Q -8 -26 0 -28 M4 -12 Q 6 -26 14 -28 M20 -10 Q 22 -22 30 -24" stroke="#1F8A4C" strokeWidth="3" strokeLinecap="round" fill="none"/>
-              </g>
-              <path d="M18 88 Q 30 100 38 116" stroke="#D9A678" strokeWidth="12" strokeLinecap="round" fill="none"/>
-            </g>
-            <g transform="translate(440 386)">
-              <ellipse cx="40" cy="44" rx="90" ry="4" fill="#0E1410" opacity="0.15"/>
-              <g transform="translate(-90 -10)">
-                <ellipse cx="0" cy="20" rx="34" ry="20" fill="#F4D690"/>
-                <ellipse cx="-28" cy="14" rx="14" ry="12" fill="#F4D690"/>
-                <path d="M-38 6 L-44 -4 M-32 4 L-36 -8" stroke="#7A4216" strokeWidth="3" strokeLinecap="round"/>
-                <rect x="-14" y="34" width="4" height="14" fill="#7A4216"/>
-                <rect x="6" y="34" width="4" height="14" fill="#7A4216"/>
-                <rect x="22" y="34" width="4" height="14" fill="#7A4216"/>
-              </g>
-              <rect x="-50" y="-10" width="120" height="34" fill="#A85420"/>
-              <rect x="-50" y="-10" width="120" height="6" fill="#7A4216"/>
-              <ellipse cx="-30" cy="-14" rx="14" ry="8" fill="#FCF4E4"/>
-              <ellipse cx="0" cy="-16" rx="14" ry="9" fill="#F4D690"/>
-              <ellipse cx="30" cy="-14" rx="14" ry="8" fill="#FCF4E4"/>
-              <circle cx="-30" cy="-18" r="4" fill="#D94F38"/>
-              <circle cx="-24" cy="-20" r="4" fill="#D94F38"/>
-              <g transform="translate(-30 30)">
-                <circle r="16" fill="#3A2410"/>
-                <circle r="10" fill="#7A4216"/>
-                <circle r="3" fill="#3A2410"/>
-                <path d="M0 -14 L0 14 M-14 0 L14 0 M-10 -10 L10 10 M10 -10 L-10 10" stroke="#3A2410" strokeWidth="2"/>
-              </g>
-              <g transform="translate(40 30)">
-                <circle r="16" fill="#3A2410"/>
-                <circle r="10" fill="#7A4216"/>
-                <circle r="3" fill="#3A2410"/>
-                <path d="M0 -14 L0 14 M-14 0 L14 0 M-10 -10 L10 10 M10 -10 L-10 10" stroke="#3A2410" strokeWidth="2"/>
-              </g>
-            </g>
-            <g stroke="#2A2418" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.7">
-              <path d="M380 130 q 8 -8 16 0 q 8 -8 16 0"/>
-              <path d="M460 100 q 6 -6 12 0 q 6 -6 12 0"/>
-              <path d="M540 140 q 7 -7 14 0 q 7 -7 14 0"/>
-            </g>
-          </svg>
-        </div>
-
-        {/* Content overlay */}
-        <div className="vv-container hero-village-inner">
-          {/* Left: white card with text */}
-          <div className="hero-village-card">
-            <span className="chip-soft">
-              <span className="chip-dot" />
-              Direct from Vizag Rythu Bazar
-            </span>
-            <h1 className="hero-village-title">
-              Daily <span className="telugu-display">రైతు బజార్</span> rates,<br />
-              market updates &amp;<br />
-              <span className="serif-it">fresh shopping.</span>
-            </h1>
-            <p className="hero-village-sub">
-              Live wholesale prices from all 4 Visakhapatnam Rythu Bazars, our own farm-fresh products, and morning delivery — all in one place.
-            </p>
-            <div className="hero-village-cta">
-              <Link href="/shop" className="btn-primary">
-                Shop Now
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </Link>
-              <Link href="/prices" className="btn-ghost-dark">
-                Today&apos;s prices
-              </Link>
-            </div>
-          </div>
-
-          {/* Right: floating veg circles */}
-          <div className="hero-collage">
-            {HERO_VEGS.map((emoji, i) => (
-              <div key={i} className={`hero-veg-photo hero-veg-${i + 1}`}>
-                <span>{emoji}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Stats strip */}
-        <div className="hero-village-stats">
-          <div className="hero-village-stats-inner">
-            <div><b>Daily</b><span>Rythu Bazar rates</span></div>
-            <div><b>2,000+</b><span>Vizag families</span></div>
-            <div><b>45 min</b><span>avg delivery</span></div>
-            <div><b>4</b><span>Rythu Bazars covered</span></div>
-          </div>
-        </div>
-      </section>
+      <HeroSlider />
 
       {/* ── TODAY'S RATES ──────────────────────────────────────────── */}
       <RatesSection products={rateProducts} totalCount={totalCount} today={today} />
